@@ -5,7 +5,7 @@
 | Name | CNET | GitHub |
 | :--- | :--- | :--- |
 | Clarice Kim | claricek | cnk2-rgb |
-| Spencer Dearmane | dearmanspencer | spencerdearman |
+| Spencer Dearman | dearmanspencer | spencerdearman |
 | Haoyang Li | haoyangl | haoyang-uchi |
 | Kevin Dougherty | kdough01 | kdough01 |
 
