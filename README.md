@@ -1,18 +1,13 @@
 ## MPCS 56600: Final Project
 
 ## Group Members
-#### Clarice Kim
-- **CNET:** claricek
-- **GitHub:** cnk2-rgb
-#### Spencer Dearmane 
-- **CNET:** dearmanspencer
-- **GitHub:** spencerdearman
-#### Haoyang Li
-- **CNET:** haoyangl
-- **GitHub:** haoyang-uchi
-#### Kevin Dougherty
-- **CNET:** kdough01
-- **GitHub:** kdough01
+
+| Name | CNET | GitHub |
+| :--- | :--- | :--- |
+| Clarice Kim | claricek | cnk2-rgb |
+| Spencer Dearmane | dearmanspencer | spencerdearman |
+| Haoyang Li | haoyangl | haoyang-uchi |
+| Kevin Dougherty | kdough01 | kdough01 |
 
 ## Sources
 - Docker stop docs: https://docs.docker.com/reference/cli/docker/container/stop/
