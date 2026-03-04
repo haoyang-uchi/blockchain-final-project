@@ -8,3 +8,6 @@
 | Spencer Dearman | dearmanspencer | spencerdearman |
 | Haoyang Li | haoyangl | haoyang-uchi |
 | Kevin Dougherty | kdough01 | kdough01 |
+
+## Sources
+- Proto syntax: https://protobuf.dev/programming-guides/proto3/

@@ -1,0 +1,28 @@
+/* energy_chain.proto */
+
+syntax = "proto3";
+
+/**
+Models
+*/
+
+/* Block */
+message Block {
+  Header header = 1;
+  repeated Transaction transactions = 2; /* Transactions in the block */
+}
+
+/* Header */
+message Header {
+    uint32 version = 1;
+    string hash_prev_block = 2; /* hex string */
+    string hash_merkle_root = 3; /* hex string */
+    uint64 timestamp = 4;
+    uint32 bits = 5; /* difficulty target */
+    uint32 nonce = 6;
+    uint64 height = 7; 
+}
+
+/* Transaction */
+message Transaction {
+}
