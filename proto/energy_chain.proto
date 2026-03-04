@@ -3,13 +3,13 @@
 syntax = "proto3";
 
 /**
-Models
+* --- Models ---
 */
 
 /* Block */
 message Block {
   Header header = 1;
-  repeated Transaction transactions = 2; /* Transactions in the block */
+  repeated Transaction transactions = 2; /* transactions in the block */
 }
 
 /* Header */
@@ -24,4 +24,6 @@ message Header {
 }
 
 /* Transaction */
-message Transaction {}
+message Transaction {
+    string transaction_hash = 1; /* hash of the tx payload (hex) */
+}
