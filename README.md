@@ -11,3 +11,5 @@
 
 ## Sources
 - Proto syntax: https://protobuf.dev/programming-guides/proto3/
+- Proto formatter: https://formatter.org/protobuf-formatter
+
