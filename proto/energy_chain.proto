@@ -41,6 +41,17 @@ message Transaction {
     string transaction_hash = 1; /* hash of the tx payload (hex) */
 }
 
+/** GridRateTx 
+* Created by the Grid Node to broadcast the current energy rates.
+*/
+message GridRateTx {
+    int64 push_rate = 1; /* price per Watt-hour to buy from Producers (microcoins) */
+    int64 pull_rate = 2; /* price per Watt-hour to sell to Consumers (microcoins) */
+    uint64 expiry_height = 3; /* block height where these rates expire */
+    string grid_address = 4; /* expected GRID_ADDRESS */
+    bytes signature = 5; /* ECDSA signature from the Grid node */
+}
+
 /** Order Tx
 * Created by a User who wants to trade energy.
 */ 
@@ -53,3 +64,15 @@ message OrderTx {
     string script = 6; /* stack-based script for the trading constraints */
     bytes signature = 7; /* ECDSA signature */
 }
+
+/** TradeTx
+* Created by a Miner to confirm trades between Users and the Grid.
+*/
+message TradeTx {
+    string miner_address = 1; /* address of the miner */
+    OrderTx order = 2; /* the OrderTx being fulfilled */
+    GridRateTx grid_rate = 3; /* the GridRateTx it is executing against */
+    int64 miner_fee = 4; /* fee collected by the miner */
+    int64_settlement_amount = 5; /* computed settlement (microcoins) */
+}
+
