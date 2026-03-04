@@ -3,6 +3,19 @@
 syntax = "proto3";
 
 /**
+* --- Enums ---
+*/
+
+/**
+* This is used to determine whether the OrderTx is pushing energy into the grid,
+* (PUSH), or pulling energy from the grid (PULL).
+*/
+enum OrderType {
+  PUSH = 0; /* producer is selling energy */
+  PULL = 1; /* consumer is buying energy */
+}
+
+/**
 * --- Models ---
 */
 
