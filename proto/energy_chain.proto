@@ -2,28 +2,89 @@
 
 syntax = "proto3";
 
-/**
-* --- Enums ---
-*/
+package energy_chain;
 
 /**
-* This is used to determine whether the OrderTx is pushing energy into the grid,
-* (PUSH), or pulling energy from the grid (PULL).
-*/
+ * --- Services ---
+ */
+
+service NodeService {
+  /* Submit an unconfirmed Transaction to mempool */
+  rpc SubmitTx(Transaction) returns (SubmitResponse);
+
+  /* Submit a new mined Block to the network */
+  rpc SubmitBlock(Block) returns (SubmitResponse);
+
+  /* Get the current tip of the chain */
+  rpc GetTip(GetTipRequest) returns (Block);
+
+  /* Request a range of blocks */
+  rpc GetBlocks(GetBlocksRequest) returns (GetBlocksResponse);
+
+  /* Node discovery */
+  rpc GetPeers(GetPeersRequest) returns (GetPeersResponse);
+}
+
+/**
+ * --- Request + Response Models ---
+ */
+
+/** SubmitResponse
+ * Reponse indicating success or failure of a submission.
+ */
+message SubmitResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/* GetTipRequest */
+message GetTipRequest {}
+
+/* GetBlocksRequest */
+message GetBlocksRequest {
+  uint64 start_height = 1;
+  uint64 end_height = 2;
+}
+
+/* GetBlocksResponse */
+message GetBlocksResponse {
+  repeated Block blocks = 1;
+}
+
+/* GetPeersRequest */
+message GetPeersRequest {}
+
+/* GetPeersResponse */
+message GetPeersResponse {
+  repeated string peer_addresses = 1; /* List of IP:Port strings */
+}
+
+/**
+ * --- Enums ---
+ */
+
+/**
+ * This is used to determine whether the OrderTx is pushing energy into the
+ * grid, (PUSH), or pulling energy from the grid (PULL).
+ */
 enum OrderType {
   PUSH = 0; /* producer is selling energy */
   PULL = 1; /* consumer is buying energy */
 }
 
 /**
-* --- Models ---
-*/
+ * --- Block Model ---
+ */
 
 /* Block */
 message Block {
   Header header = 1;
   repeated Transaction transactions = 2; /* transactions in the block */
 }
+
+/**
+ * --- Header Model ---
+ */
 
 /* Header */
 message Header {
@@ -36,43 +97,52 @@ message Header {
   uint64 height = 7;
 }
 
+/**
+ * --- Transaction Models ---
+ */
+
 /* Transaction */
 message Transaction {
-    string transaction_hash = 1; /* hash of the tx payload (hex) */
+  string transaction_hash = 1; /* hash of the tx payload (hex) */
+
+  oneof payload {
+    GridRateTx grid_rate_tx = 2;
+    OrderTx order_tx = 3;
+    TradeTx trade_tx = 4;
+  }
 }
 
-/** GridRateTx 
-* Created by the Grid Node to broadcast the current energy rates.
-*/
+/** GridRateTx
+ * Created by the Grid Node to broadcast the current energy rates.
+ */
 message GridRateTx {
-    int64 push_rate = 1; /* price per Watt-hour to buy from Producers (microcoins) */
-    int64 pull_rate = 2; /* price per Watt-hour to sell to Consumers (microcoins) */
-    uint64 expiry_height = 3; /* block height where these rates expire */
-    string grid_address = 4; /* expected GRID_ADDRESS */
-    bytes signature = 5; /* ECDSA signature from the Grid node */
+  int64 push_rate = 1; /* price per Wh to buy from Producers (microcoins) */
+  int64 pull_rate = 2; /* price per Wh to sell to Consumers (microcoins) */
+  uint64 expiry_height = 3; /* block height where these rates expire */
+  string grid_address = 4;  /* expected GRID_ADDRESS */
+  bytes signature = 5;      /* ECDSA signature from the Grid node */
 }
 
 /** Order Tx
-* Created by a User who wants to trade energy.
-*/ 
+ * Created by a User who wants to trade energy.
+ */
 message OrderTx {
-    string sender_address = 1;
-    OrderType type = 2;
-    int64 energy_wh = 3; /* amount of energy (Wh) to push or pull */
-    int64 limit_price = 4; /* the maximum pull rate or minimum push rate (microcoins) */
-    uint64 nonce = 5; /* account nonce */
-    string script = 6; /* stack-based script for the trading constraints */
-    bytes signature = 7; /* ECDSA signature */
+  string sender_address = 1;
+  OrderType type = 2;
+  int64 energy_wh = 3;   /* amount of energy (Wh) to push or pull */
+  int64 limit_price = 4; /* the max pull rate or min push rate (microcoins) */
+  uint64 nonce = 5;      /* account nonce */
+  string script = 6;     /* stack-based script for the trading constraints */
+  bytes signature = 7;   /* ECDSA signature */
 }
 
 /** TradeTx
-* Created by a Miner to confirm trades between Users and the Grid.
-*/
+ * Created by a Miner to confirm trades between Users and the Grid.
+ */
 message TradeTx {
-    string miner_address = 1; /* address of the miner */
-    OrderTx order = 2; /* the OrderTx being fulfilled */
-    GridRateTx grid_rate = 3; /* the GridRateTx it is executing against */
-    int64 miner_fee = 4; /* fee collected by the miner */
-    int64_settlement_amount = 5; /* computed settlement (microcoins) */
+  string miner_address = 1;    /* address of the miner */
+  OrderTx order = 2;           /* the OrderTx being fulfilled */
+  GridRateTx grid_rate = 3;    /* the GridRateTx it is executing against */
+  int64 miner_fee = 4;         /* fee collected by the miner */
+  int64 settlement_amount = 5; /* computed settlement (microcoins) */
 }
-
