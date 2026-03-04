@@ -40,3 +40,16 @@ message Header {
 message Transaction {
     string transaction_hash = 1; /* hash of the tx payload (hex) */
 }
+
+/** Order Tx
+* Created by a User who wants to trade energy.
+*/ 
+message OrderTx {
+    string sender_address = 1;
+    OrderType type = 2;
+    int64 energy_wh = 3; /* amount of energy (Wh) to push or pull */
+    int64 limit_price = 4; /* the maximum pull rate or minimum push rate (microcoins) */
+    uint64 nonce = 5; /* account nonce */
+    string script = 6; /* stack-based script for the trading constraints */
+    bytes signature = 7; /* ECDSA signature */
+}
