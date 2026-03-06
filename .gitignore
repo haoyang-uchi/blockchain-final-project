@@ -1,5 +1,7 @@
 .DS_Store
 /env
-core/__pycache
+core/__pycache__
 proto/__pycache__
 scripting/__pycache__
+tests/__pycache__
+.vscode
