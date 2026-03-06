@@ -2,7 +2,6 @@
 
 import hashlib
 
-# base from my lab 4
 class MerkleTree:
     def __init__(self, tx_hashes):
         self.tx_hashes = tx_hashes
