@@ -3,9 +3,7 @@
 import time
 import hashlib
 import proto.energy_chain_pb2 as pb2
-from core.header import Header
 from core.merkle_tree import MerkleTree
-from core.transaction import Transaction
 from typing import List
 
 
