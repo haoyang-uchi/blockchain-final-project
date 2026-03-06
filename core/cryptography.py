@@ -4,6 +4,7 @@ import proto.energy_chain_pb2 as pb2
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import hashlib
 
+
 # generates a new SECP256k1 keypair
 def generate_key():
     sk = SigningKey.generate(curve=SECP256k1)
@@ -13,11 +14,13 @@ def generate_key():
     return sk_hex, vk_hex
 
 
+# fetches the signing key and then signs the key
 def sign_data(private_key_hex: str, data: bytes) -> bytes:
     sk = SigningKey.from_string(bytes.fromhex(private_key_hex), curve=SECP256k1)
     return sk.sign(data, hashfunc=hashlib.sha256, sigencode=sigencode_der)
 
 
+# verifies teh signature given a bytes signature and data
 def verify_signature(public_key_hex: str, signature: bytes, data: bytes) -> bool:
     try:
         vk = VerifyingKey.from_string(bytes.fromhex(public_key_hex), curve=SECP256k1)

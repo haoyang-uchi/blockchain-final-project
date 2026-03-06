@@ -1,4 +1,5 @@
-# scripting/script.py
+# scripting/script_engine.py
+
 
 # specifically for handling errors that happen during a script execution
 class ScriptError(Exception):

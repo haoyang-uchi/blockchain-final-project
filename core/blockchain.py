@@ -15,13 +15,13 @@ class Blockchain:
     def initialize_genesis(self):
         genesis = create_new_block(prev_hash="0" * 64, height=0, bits=0x1E0FFFF0)
 
-        # giving the GRID a massive reserve
-        # 100 GWh and 1 trillion Microcoins
+        # giving the grid 100 GWh (which is a lot)
         self.state.get_account(GRID_ADDRESS).energy_wh = 100_000_000_000
+        # giving 1 trillion microcoins
         self.state.get_account(GRID_ADDRESS).coins_micro = 1_000_000_000_000
 
         # testing accounts
-        # REMOVE LATER
+        # **REMOVE LATER**
         test_user_a = "userA"
         self.state.update_account(test_user_a, energy_delta=5000, coins_delta=100_000)
 
@@ -48,9 +48,11 @@ class Blockchain:
         print(f"Appended Block Height {block.header.height} to Chain")
         return True
 
+    # gets the tip of the chain
     def get_tip(self) -> pb2.Block:
         return self.blocks[-1]
 
+    # gets a block by height
     def get_block_by_height(self, height: int) -> pb2.Block:
         if 0 <= height < len(self.blocks):
             return self.blocks[height]

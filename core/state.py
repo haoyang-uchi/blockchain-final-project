@@ -3,8 +3,7 @@
 from typing import Dict
 from core.account import Account
 
-# for the grid address, I took the alphabet number position of the first letter
-# in each of our CNETs
+# I took the alphabet number position of the first letter in each of our CNETs
 GRID_ADDRESS = "0x000000000000000000000000000000034811"
 
 
@@ -27,8 +26,8 @@ class State:
         if nonce is not None:
             account.nonce = nonce
 
-    # applies a trade against the grid. push = true (selling) push = false (buying)
-    # might convert push into an enum later
+    # applies a trade against the grid
+    # push = true (selling) push = false (buying)
     def apply_trade(
         self,
         user_address: str,

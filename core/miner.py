@@ -2,31 +2,31 @@
 
 import time
 import proto.energy_chain_pb2 as pb2
-from core.block import calculate_header_hash, calculate_merkle_root
+from core.block import calculate_header_hash, get_merkle_root
 from typing import List
 
 
-def target(self, bits) -> int:
+def calculate_target(bits: int) -> int:
     # shifting to get the leading 2 hex
     exponent_hex = bits >> 24
     exponent = int(exponent_hex & 0xFF)
     coefficient = bits & 0xFFFFFF
-    target = coefficient * (2 ** (8 * (exponent - 3)))
-    return target
+    target_val = coefficient * (2 ** (8 * (exponent - 3)))
+    return target_val
 
 
 # verifies that double SHA-256 meets difficulty (proof of work)
 def verify(header: pb2.Header) -> bool:
     block_hash = calculate_header_hash(header)
     hash_int = int(block_hash, 16)
-    target = target(header.bits)
-    return hash_int <= target
+    target_val = calculate_target(header.bits)
+    return hash_int <= target_val
 
 
 # mine a block
 def mine_block(header: pb2.Header, max_nonce: int = 10_000_000) -> bool:
     # get the target
-    target = target(header.bits)
+    target_val = calculate_target(header.bits)
     start_time = time.time()
 
     # keep checking proof of work until it hits
@@ -37,8 +37,8 @@ def mine_block(header: pb2.Header, max_nonce: int = 10_000_000) -> bool:
         header.nonce += 1
 
 
-# given the previous block and a list of transactions, it finds the merkle root,
-# creates a new block header, and mines it
+# given the prev block and a list of tx, finds the merkle root, creates a
+# new block header, and then mines the block
 def construct_and_mine_block(
     prev_block: pb2.Block,
     transactions: List[pb2.Transaction],
@@ -53,9 +53,7 @@ def construct_and_mine_block(
     new_block.header.height = prev_block.header.height + 1
 
     new_block.transactions.extend(transactions)
-    new_block.header.hash_merkle_root = calculate_merkle_root(
-        list(new_block.transactions)
-    )
+    new_block.header.hash_merkle_root = get_merkle_root(list(new_block.transactions))
 
     if mine_block(new_block.header):
         return new_block
