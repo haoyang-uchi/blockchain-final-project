@@ -3,12 +3,13 @@
 from core.block import create_new_block, calculate_header_hash
 from core.state import State, GRID_ADDRESS
 import proto.energy_chain_pb2 as pb2
+from typing import List
 
 
 class Blockchain:
     def __init__(self):
         self.blocks: List[pb2.Block] = []
-        self.state = StateDB()
+        self.state = State()
         self.initialize_genesis()
 
     def initialize_genesis(self):
@@ -28,7 +29,7 @@ class Blockchain:
         self.state.update_account(test_user_b, energy_delta=0, coins_delta=5_000_000)
 
         self.blocks.append(genesis)
-        logger.info("Created Genesis Block")
+        print("Created Genesis Block")
 
     # adds a block to the chain
     def add_block(self, block: pb2.Block) -> bool:
