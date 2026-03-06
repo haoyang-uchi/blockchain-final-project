@@ -1,76 +1,62 @@
 # core/miner.py
 
 import time
-from core.block import Block
-from core.blockchain import Blockchain
-from core.output import Output
-from core.transaction import Transaction
-from core.txn_memory_pool import TxnMemoryPool
+import proto.energy_chain_pb2 as pb2
+from core.block import calculate_header_hash, calculate_merkle_root
+from typing import List
 
 
-class Miner:
-    def __init__(self):
-        self.cryptocurrency_name = "PolyGlass"
-        self.max_txns = Block.MAX_TXNS  # 10
+def target(self, bits) -> int:
+    # shifting to get the leading 2 hex
+    exponent_hex = bits >> 24
+    exponent = int(exponent_hex & 0xFF)
+    coefficient = bits & 0xFFFFFF
+    target = coefficient * (2 ** (8 * (exponent - 3)))
+    return target
 
-    def target(self, bits):
-        # shifting to get the leading 2 hex
-        exponent_hex = bits >> 24
-        exponent = int(exponent_hex & 0xFF)
-        coefficient = bits & 0xFFFFFF
-        target = coefficient * (2 ** (8 * (exponent - 3)))
-        return target
 
-    def generate_coinbase_txn(self):
-        inputs = ["polyglass_coinbase_txn_" + str(int(time.time()))]
-        output = Output(100000, "POLYGLASS SCRIPT")
-        return Transaction(inputs, [output])
+# verifies that double SHA-256 meets difficulty (proof of work)
+def verify(header: pb2.Header) -> bool:
+    block_hash = calculate_header_hash(header)
+    hash_int = int(block_hash, 16)
+    target = target(header.bits)
+    return hash_int <= target
 
-    def mine(self, blockchain: Blockchain, memory: TxnMemoryPool):
-        # get memory transactions and create coinbase transaction
-        memory_txns = memory.get_transactions(self.max_txns - 1)
-        coinbase_txn = self.generate_coinbase_txn()
-        transactions = [coinbase_txn] + memory_txns
 
-        # candidate block
-        prev_hash = "0" * 64
-        if blockchain.blockchain:
-            prev_hash = blockchain.blockchain[-1].block_hash
-        block = Block(prev_hash)
-        for txn in transactions:
-            block.add_transaction(txn)
+# mine a block
+def mine_block(header: pb2.Header, max_nonce: int = 10_000_000) -> bool:
+    # get the target
+    target = target(header.bits)
+    start_time = time.time()
 
-        # lab default is 0x207fffff
-        block.block_header.bits = 0x207FFFFF
-        target = self.target(block.block_header.bits)
+    # keep checking proof of work until it hits
+    for _ in range(max_nonce):
+        if verify(header):
+            elapsed = time.time() - start_time
+            return True
+        header.nonce += 1
 
-        print("Mining Block...")
-        print(f"Number of Transactions: {len(transactions)}")
-        print(f"Target: {target}")
 
-        # start proof of work
-        self.proof_of_work(block, 0, target)
+# given the previous block and a list of transactions, it finds the merkle root,
+# creates a new block header, and mines it
+def construct_and_mine_block(
+    prev_block: pb2.Block,
+    transactions: List[pb2.Transaction],
+    difficulty_bits: int = 0x207FFFFF,
+) -> pb2.Block:
+    new_block = pb2.Block()
+    new_block.header.version = 1
+    new_block.header.hash_prev_block = calculate_header_hash(prev_block.header)
+    new_block.header.timestamp = int(time.time())
+    new_block.header.bits = difficulty_bits
+    new_block.header.nonce = 0
+    new_block.header.height = prev_block.header.height + 1
 
-        # add block to blockchain
-        blockchain.add_block(block)
+    new_block.transactions.extend(transactions)
+    new_block.header.hash_merkle_root = calculate_merkle_root(
+        list(new_block.transactions)
+    )
 
-        return block
-
-    def proof_of_work(self, block: Block, nonce: int, target: int):
-        while True:
-            block.block_header.nonce = nonce
-            block.block_header.timestamp = int(time.time())
-
-            block_hex_hash = block.calculate_block_hash(block.block_header)
-            block_int_hash = int(block_hex_hash, 16)
-
-            if block_int_hash < target:
-                block.block_hash = block_hex_hash
-                print("Block mining complete!")
-                print(f"Block hash: {block.block_hash}")
-                print(f"Nonce: {nonce}")
-                break
-
-            nonce += 1
-            if nonce % 1000000 == 0:
-                print(f"Continuing mining - Current nonce: {nonce}")
+    if mine_block(new_block.header):
+        return new_block
+    return None

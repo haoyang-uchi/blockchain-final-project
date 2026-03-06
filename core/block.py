@@ -12,26 +12,29 @@ def calculate_header_hash(header: pb2.Header):
     header_bytes = header.SerializeToString()
     return hashlib.sha256(hashlib.sha256(header_bytes).digest()).hexdigest()
 
- # calculates the merkle 
+
+# calculates the merkle
 def get_merkle_root(transactions: List[pb2.Transaction]):
     tx_hashes = []
     for tx in transactions:
         tx_hashes.append(tx.transaction_hash)
 
     if not tx_hashes:
-        return  ""
+        return ""
 
     mt = MerkleTree(tx_hashes)
     return mt.find_root()
+
 
 # calculates hash of a proto transaction
 def calculate_tx_hash(tx: pb2.Transaction) -> str:
     # create a copy of the transaction to prevent changes
     tmp_tx = pb2.Transaction()
     tmp_tx.CopyFrom(tx)
-    tmp_tx.transaction_hash = "" 
+    tmp_tx.transaction_hash = ""
     tx_bytes = tmp_tx.SerializeToString()
     return hashlib.sha256(hashlib.sha256(tx_bytes).digest()).hexdigest()
+
 
 # creates a new block (mapped to the proto block def)
 def create_new_block(prev_hash: str, height: int, bits: int) -> pb2.Block:

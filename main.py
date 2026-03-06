@@ -2,99 +2,75 @@
 
 import random
 import time
-from threading import Thread, Event
-from core.blockchain import Blockchain
-from core.block import Block
-from core.miner import Miner
-from core.output import Output
-from core.transaction import Transaction
-from core.txn_memory_pool import TxnMemoryPool
-
-THREADING_ENABLED = False
-
-
-def simulate_network(memory: TxnMemoryPool, blockchain: Blockchain, miner: Miner):
-    stop_event = Event()
-    thread = Thread(target=generate_network_transactions, args=(memory, stop_event))
-    thread.start()
-    print("\n---------- Started Network ----------")
-
-    block_count = 0
-    max_blocks = 10
-    try:
-        while block_count < max_blocks:
-            # waiting for a transaction
-            if memory.is_empty():
-                print("Waiting for transactions from network...")
-                time.sleep(5)
-                continue
-
-            print(f"\n---------- Mining Block {block_count + 1} ----------")
-            miner.mine(blockchain, memory)
-            block_count += 1
-    finally:
-        print("---------- Network Stopped ----------")
-        stop_event.set()
-        thread.join()
-
-
-# generates transactions for threading
-def generate_network_transactions(memory: TxnMemoryPool, stop_event: Event):
-    while not stop_event.is_set():
-        # 10 seconds is slow so I am doing between 1 and 5 seconds
-        sleep_time = random.uniform(1, 5)
-        time.sleep(sleep_time)
-
-        # create transaction
-        random_num = random.randint(1, 100000)
-        inputs = [f"input_{random_num}"]
-        value = random.randint(100, 10000)
-        tx = Transaction(inputs, [Output(value, f"TXN_SCRIPT_{random_num}")])
-        memory.add_transaction(tx)
-        print(f"[NETWORK SIM] Received new transaction: {tx.transaction_hash}")
-
-
-# generates a set count of transactions
-def generate_transactions(memory: TxnMemoryPool, count: int):
-    for i in range(count):
-        random_num = random.randint(1, 100000)
-        inputs = [f"input_{random_num}"]
-        value = random.randint(100, 10000)  # 0.1 to 10 PolyGlass coins
-        tx = Transaction(inputs, [Output(value, f"TXN_SCRIPT_{random_num}")])
-        memory.add_transaction(tx)
-
+from core.cryptography import generate_key, sign_tx, verify_tx_signature
+from core.trade import evaluate_order, create_trade_tx
+import proto.energy_chain_pb2 as pb2
 
 def main():
-    print("\nBlockchain Setup")
-    print("-" * 70)
-
-    # create blockchain
-    blockchain = Blockchain()
-
-    # create memory pool
-    memory = TxnMemoryPool()
-
-    # create miner
-    miner = Miner()
-
-    if THREADING_ENABLED:
-        simulate_network(memory, blockchain, miner)
+    # setting up keypairs
+    grid_priv, grid_pub = generate_key()
+    user_priv, user_pub = generate_key()
+    miner_priv, miner_pub = generate_key()
+    print(f"Grid PubKey: {grid_pub[:16]}...")
+    print(f"User PubKey: {user_pub[:16]}...")
+    print(f"Miner PubKey: {miner_pub[:16]}...")
+    
+    # grid broadcasts rates
+    print("Grid broadcasts rates...")
+    grid_rate = pb2.GridRateTx()
+    grid_rate.push_rate = 4 # pays 5 microcoins per Wh
+    grid_rate.pull_rate = 12 # charges 12 microcoins per Wh
+    grid_rate.expiry_height = 100
+    grid_rate.grid_address = grid_pub
+    
+    # wrap in transaction and sign
+    grid_tx = pb2.Transaction()
+    grid_tx.grid_rate_tx.CopyFrom(grid_rate)
+    sign_tx(grid_tx, grid_priv)
+    
+    is_valid = verify_tx_signature(grid_tx)
+    print(f"Grid TX: Signature Valid: {is_valid}")
+    print(f"Grid TX: Rates -> PUSH: {grid_rate.push_rate}, PULL: {grid_rate.pull_rate}")
+    
+    # creating a test order
+    print("creating an order...")
+    order = pb2.OrderTx()
+    order.sender_address = user_pub
+    order.type = pb2.PUSH # selling
+    order.energy_wh = 500
+    order.limit_price = 4 # will only sell if Grid pays at least 4
+    order.nonce = 1
+    
+    # add the script: only execute if the pull rate is less than 15
+    order.script = "GET_PULL_RATE 15 LT VERIFY 1"
+    
+    # wrap in a transacton and sign it
+    order_tx = pb2.Transaction()
+    order_tx.order_tx.CopyFrom(order)
+    sign_tx(order_tx, user_priv)
+    
+    is_valid = verify_tx_signature(order_tx)
+    print(f"Order tx: Signature Valid: {is_valid}")
+    print(f"Order tx: Selling {order.energy_wh} Wh. Limit: {order.limit_price}.")
+    print(f"Order tx: Script: '{order.script}'")
+    
+    # miner evaluates the order
+    current_height = 50
+    can_execute = evaluate_order(order, grid_rate, current_height)
+    
+    print(f"Miner: evaluate_order() result: {can_execute}")
+    
+    if can_execute:
+        # miner is settling the trade
+        miner_fee = 50 # miner is taking 50 microcoins
+        trade_tx = create_trade_tx(order, grid_rate, miner_pub, miner_fee)
+        
+        trade = trade_tx.trade_tx
+        print(f"Trade tx: Successfully created settlement!")
+        print(f"Trade tx: Settled Amount: {trade.settlement_amount} microcoins")
+        print(f"Trade tx: Miner Fee Collected: {trade.miner_fee}")
     else:
-        # not sure if it was a typo but lab said 91 transactions
-        generate_transactions(memory, 91)
-        block_count = 0
-        while not memory.is_empty():
-            print(f"\n---------- Mining Block {block_count + 1} ----------")
-            miner.mine(blockchain, memory)
-            block_count += 1
-
-    print("-" * 70)
-    print("\n---------- Final Block ----------")
-    final_block = blockchain.blockchain[-1]
-    final_block.printBlock()
-    print("\n---------- Results ----------")
-    print(f"Total blocks: {len(blockchain.blockchain)}")
-    print(f"Blockchain tip height: {len(blockchain.blockchain) - 1}")
+        print("\nTrade tx: Execution failed!")
 
 
 if __name__ == "__main__":

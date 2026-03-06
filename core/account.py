@@ -1,5 +1,6 @@
 # core/account.py
 
+
 class Account:
     def __init__(self, address: str):
         self.address = address
@@ -12,5 +13,5 @@ class Account:
             "address": self.address,
             "energy_wh": self.energy_wh,
             "micro_coins": self.micro_coins,
-            "nonce": self.nonce
+            "nonce": self.nonce,
         }

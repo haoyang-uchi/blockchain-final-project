@@ -4,6 +4,7 @@
 class ScriptError(Exception):
     pass
 
+
 class ScriptEngine:
     def __init__(self, script: str, context: dict):
         self.script = script
@@ -13,7 +14,7 @@ class ScriptEngine:
     def execute(self) -> bool:
         # if there isn't a script, just return true
         if not self.script:
-            return True 
+            return True
 
         tokens = self.script.split()
         for token in tokens:
@@ -30,21 +31,21 @@ class ScriptEngine:
 
         if len(self.stack) == 0:
             return False
-    
+
         top = self.stack[-1]
         return bool(top)
-    
+
     def _handle_operation(self, op: str):
         if op == "DUP":
             if not self.stack:
                 raise ScriptError("DUP on empty stack.")
             self.stack.append(self.stack[-1])
-            
+
         elif op == "DROP":
             if not self.stack:
                 raise ScriptError("DROP on empty stack.")
             self.stack.pop()
-        
+
         # syntax is 'a b EQ'
         elif op == "EQ":
             if len(self.stack) < 2:
@@ -55,7 +56,7 @@ class ScriptEngine:
                 self.stack.append(1)
             else:
                 self.stack.append(0)
-            
+
         # syntax is 'a b LT'
         elif op == "LT":
             if len(self.stack) < 2:
@@ -77,7 +78,7 @@ class ScriptEngine:
                 self.stack.append(1)
             else:
                 self.stack.append(0)
-            
+
         # syntax is 'a b GT'
         elif op == "GT":
             if len(self.stack) < 2:
@@ -100,17 +101,17 @@ class ScriptEngine:
                 self.stack.append(1)
             else:
                 self.stack.append(0)
-            
+
         elif op == "AND":
             if len(self.stack) < 2:
                 raise ScriptError("AND requires 2 elements.")
             a, b = self.stack.pop(), self.stack.pop()
-            
+
             if bool(a) and bool(b):
                 self.stack.append(1)
             else:
                 self.stack.append(0)
-                            
+
         elif op == "OR":
             if len(self.stack) < 2:
                 raise ScriptError("OR requires 2 elements.")
@@ -120,28 +121,28 @@ class ScriptEngine:
                 self.stack.append(1)
             else:
                 self.stack.append(0)
-                        
+
         elif op == "VERIFY":
             if not self.stack:
                 raise ScriptError("VERIFY on empty stack.")
             top = self.stack.pop()
             if not bool(top):
                 raise ScriptError("VERIFY failed.")
-                
+
         elif op == "GETHEIGHT":
             if "height" not in self.context:
                 raise ScriptError("height not in execution context.")
             self.stack.append(self.context["height"])
-            
+
         elif op == "GET_PUSH_RATE":
             if "push_rate" not in self.context:
                 raise ScriptError("push_rate not in execution context.")
             self.stack.append(self.context["push_rate"])
-            
+
         elif op == "GET_PULL_RATE":
             if "pull_rate" not in self.context:
                 raise ScriptError("pull_rate not in execution context.")
             self.stack.append(self.context["pull_rate"])
-            
+
         else:
             raise ScriptError(f"Unknown operation: {op}")
