@@ -88,10 +88,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         raise Exception("Incorrect arguments")
 
-    client = docker.from_env()
-    container = client.containers.get(sys.argv[1])
-    ip_add = container.attrs['NetworkSettings']['IPAddress']
-    print(f"Node container running on address: {ip_add}")
+    ip_add = sys.argv[1]
     node = Node(ip_add) # Pass in address of docker container
     node.run()
         
