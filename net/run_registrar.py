@@ -18,7 +18,7 @@ class Registrar(energy_chain_pb2_grpc.RegisterServicer):
         self.last_registered = None
         self.node_dict = {}
 
-    def SendRegistration(self, request, context):
+    def RegisterNode(self, request, context):
         last_registered = self.last_registered
         if not (request.addrMe in self.node_dict.keys()):
             self.last_registered = request.addrMe

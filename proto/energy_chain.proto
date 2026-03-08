@@ -57,7 +57,12 @@ message GetBlocksResponse {
 }
 
 /* GetPeersRequest */
-message GetPeersRequest {}
+message GetPeersRequest {
+    uint64 nVersion = 1;
+    float nTime = 2;
+    string addrMe = 3;
+    uint64 bestHeight = 4;
+}
 
 /* GetPeersResponse */
 message GetPeersResponse {

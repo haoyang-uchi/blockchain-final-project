@@ -38,7 +38,7 @@ class Node():
         """
         channel = grpc.insecure_channel('grpc_server' + ":" + PORT)
         stub = energy_chain_pb2_grpc.RegisterStub(channel)
-        response = stub.SendRegistration(energy_chain_pb2.RegistrationRequest(nVersion=1, nTime=time.time(), addrMe=self.address))
+        response = stub.RegisterNode(energy_chain_pb2.RegistrationRequest(nVersion=1, nTime=time.time(), addrMe=self.address))
         print(f"Greeter client received: {response.last_registered}")
         return response
 
@@ -56,20 +56,19 @@ class Node():
         print(f"Attempting handshake {self.address} to {contact_node_addr}")
         # Create channel to node trying to contact
         channel = grpc.insecure_channel(contact_node_addr+ ":" + PORT)
-        handshake_stub = energy_chain_pb2_grpc.HandshakeStub(channel)
-        handshake_response = handshake_stub.SendHandshakeReply(energy_chain_pb2.HandshakeRequest(nVersion=1, nTime=time.time(), addrMe=self.address, bestHeight=0))
-        if not handshake_response.success: # TODO: Probably a better way to raise errors. 
-            raise Exception(f"Error with handshake from {self.address} to {contact_node_addr}")
+        handshake_stub = energy_chain_pb2_grpc.NodeServiceStub(channel)
+        handshake_response = handshake_stub.GetPeers(energy_chain_pb2.GetPeersRequest(nVersion=1, nTime=time.time(), addrMe=self.address, bestHeight=0))
+        
         self.known_peers.append(contact_node_addr)
         print(f"Successful handshake {self.address} to {contact_node_addr}")
 
         # Gossip approach - contact node's known peers
-        if len(handshake_response.knownPeers) == 0:
+        if len(handshake_response.peer_addresses) == 0:
             print(f"No more peers to discover")
             self.discovery(None)
         else:
-            print(f"Exploring peers: {handshake_response.knownPeers}")
-            for peer_addr in handshake_response.knownPeers:
+            print(f"Exploring peers: {handshake_response.peer_addresses}")
+            for peer_addr in handshake_response.peer_addresses:
                 if peer_addr != self.address and (not peer_addr in self.known_peers):
                     self.discovery(peer_addr)
 

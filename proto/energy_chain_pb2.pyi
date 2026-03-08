@@ -41,8 +41,16 @@ class GetBlocksResponse(_message.Message):
     def __init__(self, blocks: _Optional[_Iterable[_Union[Block, _Mapping]]] = ...) -> None: ...
 
 class GetPeersRequest(_message.Message):
-    __slots__ = ()
-    def __init__(self) -> None: ...
+    __slots__ = ("nVersion", "nTime", "addrMe", "bestHeight")
+    NVERSION_FIELD_NUMBER: _ClassVar[int]
+    NTIME_FIELD_NUMBER: _ClassVar[int]
+    ADDRME_FIELD_NUMBER: _ClassVar[int]
+    BESTHEIGHT_FIELD_NUMBER: _ClassVar[int]
+    nVersion: int
+    nTime: float
+    addrMe: str
+    bestHeight: int
+    def __init__(self, nVersion: _Optional[int] = ..., nTime: _Optional[float] = ..., addrMe: _Optional[str] = ..., bestHeight: _Optional[int] = ...) -> None: ...
 
 class GetPeersResponse(_message.Message):
     __slots__ = ("peer_addresses",)

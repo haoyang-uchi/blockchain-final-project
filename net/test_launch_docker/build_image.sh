@@ -1,2 +1,2 @@
-cd ../
+cd ../../
 docker build -t network .
