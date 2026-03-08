@@ -4,6 +4,7 @@ import sys
 from concurrent import futures
 import queue
 import random
+import threading
 from net.node_service import NodeService
 import net.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
@@ -19,7 +20,7 @@ from core.block import calculate_tx_hash
 PORT = config.PORT
 DISCOVERY_TIMEOUT_SECS = config.DISCOVERY_TIMEOUT_SECS
 DIFFICULTY = config.MINING_DIFFICULTY
-MAX_TXN_PER_BLOCK = config.MINING_DIFFICULTY.MAX_TXN_PER_BLOCK # TODO: maybe move this in blockchain class
+MAX_TXN_PER_BLOCK = config.MAX_TXN_PER_BLOCK # TODO: maybe move this in blockchain class
 
 """Logical representation of the entire node. """
 class Node():
@@ -41,17 +42,22 @@ class Node():
         self.discovery(registration_response.last_registered) # Run discovery process
         self.listening_newnodes() # This times out after 5 seconds. Assumes all nodes join network in that time period.
         print(f"Node with address {self.address} starts mining")
-        # TODO: Mining
-        # TXN discoverer (adds txns to mempool every 2 to 5 secs)
-        # Miner 
-            # sleeps for some time, starts mining from queue
+
+        txn_discovery_thread = threading.Thread(target=self.discover_txns, args=())
+        txn_discovery_thread.start()
+        miner = threading.Thread(target=self.mine_loop, args=())
+        miner.start()
+        # Run node for as long as the threads run - should only be stopped upon keyboard interrupt
+        txn_discovery_thread.join()
+        miner.join()
 
     def register(self):
         """
         Registers node with network by sending registration request to registrar node. Returns registration response
         from registrar.
         """
-        channel = grpc.insecure_channel('grpc_server' + ":" + PORT)
+        # channel = grpc.insecure_channel('grpc_server' + ":" + PORT)
+        channel = grpc.insecure_channel('localhost' + ":" + PORT)
         stub = energy_chain_pb2_grpc.RegisterStub(channel)
         response = stub.RegisterNode(energy_chain_pb2.RegistrationRequest(nVersion=1, nTime=time.time(), addrMe=self.address))
         print(f"Greeter client received: {response.last_registered}")
@@ -154,7 +160,7 @@ class Node():
                         success = self.blockchain.add_block(mined_block)
                         print(f"Block {mined_block.header.height} Appended: {success}")
                         print(
-                            f"Block 1 Hash: {mined_block.header.hash_prev_block} (prev) -> Merkle: {mined_block.header.hash_merkle_root}"
+                            f"Block {mined_block.header.height} Hash: {mined_block.header.hash_prev_block} (prev) -> Merkle: {mined_block.header.hash_merkle_root}"
                         )
                     else:
                         print("Failed to mine Block")
