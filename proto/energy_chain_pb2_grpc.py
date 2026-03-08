@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from proto import energy_chain_pb2 as proto_dot_energy__chain__pb2
+import energy_chain_pb2 as energy__chain__pb2
 
 GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in proto/energy_chain_pb2_grpc.py depends on'
+        + ' but the generated code in energy_chain_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -39,28 +39,28 @@ class NodeServiceStub(object):
         """
         self.SubmitTx = channel.unary_unary(
                 '/energy_chain.NodeService/SubmitTx',
-                request_serializer=proto_dot_energy__chain__pb2.Transaction.SerializeToString,
-                response_deserializer=proto_dot_energy__chain__pb2.SubmitResponse.FromString,
+                request_serializer=energy__chain__pb2.Transaction.SerializeToString,
+                response_deserializer=energy__chain__pb2.SubmitResponse.FromString,
                 _registered_method=True)
         self.SubmitBlock = channel.unary_unary(
                 '/energy_chain.NodeService/SubmitBlock',
-                request_serializer=proto_dot_energy__chain__pb2.Block.SerializeToString,
-                response_deserializer=proto_dot_energy__chain__pb2.SubmitResponse.FromString,
+                request_serializer=energy__chain__pb2.Block.SerializeToString,
+                response_deserializer=energy__chain__pb2.SubmitResponse.FromString,
                 _registered_method=True)
         self.GetTip = channel.unary_unary(
                 '/energy_chain.NodeService/GetTip',
-                request_serializer=proto_dot_energy__chain__pb2.GetTipRequest.SerializeToString,
-                response_deserializer=proto_dot_energy__chain__pb2.Block.FromString,
+                request_serializer=energy__chain__pb2.GetTipRequest.SerializeToString,
+                response_deserializer=energy__chain__pb2.Block.FromString,
                 _registered_method=True)
         self.GetBlocks = channel.unary_unary(
                 '/energy_chain.NodeService/GetBlocks',
-                request_serializer=proto_dot_energy__chain__pb2.GetBlocksRequest.SerializeToString,
-                response_deserializer=proto_dot_energy__chain__pb2.GetBlocksResponse.FromString,
+                request_serializer=energy__chain__pb2.GetBlocksRequest.SerializeToString,
+                response_deserializer=energy__chain__pb2.GetBlocksResponse.FromString,
                 _registered_method=True)
         self.GetPeers = channel.unary_unary(
                 '/energy_chain.NodeService/GetPeers',
-                request_serializer=proto_dot_energy__chain__pb2.GetPeersRequest.SerializeToString,
-                response_deserializer=proto_dot_energy__chain__pb2.GetPeersResponse.FromString,
+                request_serializer=energy__chain__pb2.GetPeersRequest.SerializeToString,
+                response_deserializer=energy__chain__pb2.GetPeersResponse.FromString,
                 _registered_method=True)
 
 
@@ -110,28 +110,28 @@ def add_NodeServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SubmitTx': grpc.unary_unary_rpc_method_handler(
                     servicer.SubmitTx,
-                    request_deserializer=proto_dot_energy__chain__pb2.Transaction.FromString,
-                    response_serializer=proto_dot_energy__chain__pb2.SubmitResponse.SerializeToString,
+                    request_deserializer=energy__chain__pb2.Transaction.FromString,
+                    response_serializer=energy__chain__pb2.SubmitResponse.SerializeToString,
             ),
             'SubmitBlock': grpc.unary_unary_rpc_method_handler(
                     servicer.SubmitBlock,
-                    request_deserializer=proto_dot_energy__chain__pb2.Block.FromString,
-                    response_serializer=proto_dot_energy__chain__pb2.SubmitResponse.SerializeToString,
+                    request_deserializer=energy__chain__pb2.Block.FromString,
+                    response_serializer=energy__chain__pb2.SubmitResponse.SerializeToString,
             ),
             'GetTip': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTip,
-                    request_deserializer=proto_dot_energy__chain__pb2.GetTipRequest.FromString,
-                    response_serializer=proto_dot_energy__chain__pb2.Block.SerializeToString,
+                    request_deserializer=energy__chain__pb2.GetTipRequest.FromString,
+                    response_serializer=energy__chain__pb2.Block.SerializeToString,
             ),
             'GetBlocks': grpc.unary_unary_rpc_method_handler(
                     servicer.GetBlocks,
-                    request_deserializer=proto_dot_energy__chain__pb2.GetBlocksRequest.FromString,
-                    response_serializer=proto_dot_energy__chain__pb2.GetBlocksResponse.SerializeToString,
+                    request_deserializer=energy__chain__pb2.GetBlocksRequest.FromString,
+                    response_serializer=energy__chain__pb2.GetBlocksResponse.SerializeToString,
             ),
             'GetPeers': grpc.unary_unary_rpc_method_handler(
                     servicer.GetPeers,
-                    request_deserializer=proto_dot_energy__chain__pb2.GetPeersRequest.FromString,
-                    response_serializer=proto_dot_energy__chain__pb2.GetPeersResponse.SerializeToString,
+                    request_deserializer=energy__chain__pb2.GetPeersRequest.FromString,
+                    response_serializer=energy__chain__pb2.GetPeersResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -162,8 +162,8 @@ class NodeService(object):
             request,
             target,
             '/energy_chain.NodeService/SubmitTx',
-            proto_dot_energy__chain__pb2.Transaction.SerializeToString,
-            proto_dot_energy__chain__pb2.SubmitResponse.FromString,
+            energy__chain__pb2.Transaction.SerializeToString,
+            energy__chain__pb2.SubmitResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -189,8 +189,8 @@ class NodeService(object):
             request,
             target,
             '/energy_chain.NodeService/SubmitBlock',
-            proto_dot_energy__chain__pb2.Block.SerializeToString,
-            proto_dot_energy__chain__pb2.SubmitResponse.FromString,
+            energy__chain__pb2.Block.SerializeToString,
+            energy__chain__pb2.SubmitResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -216,8 +216,8 @@ class NodeService(object):
             request,
             target,
             '/energy_chain.NodeService/GetTip',
-            proto_dot_energy__chain__pb2.GetTipRequest.SerializeToString,
-            proto_dot_energy__chain__pb2.Block.FromString,
+            energy__chain__pb2.GetTipRequest.SerializeToString,
+            energy__chain__pb2.Block.FromString,
             options,
             channel_credentials,
             insecure,
@@ -243,8 +243,8 @@ class NodeService(object):
             request,
             target,
             '/energy_chain.NodeService/GetBlocks',
-            proto_dot_energy__chain__pb2.GetBlocksRequest.SerializeToString,
-            proto_dot_energy__chain__pb2.GetBlocksResponse.FromString,
+            energy__chain__pb2.GetBlocksRequest.SerializeToString,
+            energy__chain__pb2.GetBlocksResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -270,8 +270,81 @@ class NodeService(object):
             request,
             target,
             '/energy_chain.NodeService/GetPeers',
-            proto_dot_energy__chain__pb2.GetPeersRequest.SerializeToString,
-            proto_dot_energy__chain__pb2.GetPeersResponse.FromString,
+            energy__chain__pb2.GetPeersRequest.SerializeToString,
+            energy__chain__pb2.GetPeersResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class RegisterStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.RegisterNode = channel.unary_unary(
+                '/energy_chain.Register/RegisterNode',
+                request_serializer=energy__chain__pb2.RegistrationRequest.SerializeToString,
+                response_deserializer=energy__chain__pb2.RegistrationReply.FromString,
+                _registered_method=True)
+
+
+class RegisterServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def RegisterNode(self, request, context):
+        """Registering Full Node with Network 
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_RegisterServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'RegisterNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterNode,
+                    request_deserializer=energy__chain__pb2.RegistrationRequest.FromString,
+                    response_serializer=energy__chain__pb2.RegistrationReply.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'energy_chain.Register', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('energy_chain.Register', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Register(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def RegisterNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/energy_chain.Register/RegisterNode',
+            energy__chain__pb2.RegistrationRequest.SerializeToString,
+            energy__chain__pb2.RegistrationReply.FromString,
             options,
             channel_credentials,
             insecure,

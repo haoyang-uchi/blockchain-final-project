@@ -25,6 +25,11 @@ service NodeService {
   rpc GetPeers(GetPeersRequest) returns (GetPeersResponse);
 }
 
+service Register {
+  /* Registering Full Node with Network */
+  rpc RegisterNode(RegistrationRequest) returns (RegistrationReply);
+}
+
 /**
  * --- Request + Response Models ---
  */
@@ -52,11 +57,29 @@ message GetBlocksResponse {
 }
 
 /* GetPeersRequest */
-message GetPeersRequest {}
+message GetPeersRequest {
+    uint64 nVersion = 1;
+    float nTime = 2;
+    string addrMe = 3;
+    uint64 bestHeight = 4;
+}
 
 /* GetPeersResponse */
 message GetPeersResponse {
   repeated string peer_addresses = 1; /* list of IP:Port strings */
+}
+
+/* RegistrationRequest */
+message RegistrationRequest {
+  uint64 nVersion = 1;
+  float nTime = 2;
+  string addrMe = 3;
+}
+
+/* RegistrationReply */
+message RegistrationReply {
+  bool success = 1;
+  string last_registered = 2;
 }
 
 /**
