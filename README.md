@@ -16,7 +16,8 @@ python3 -m tests.test_multiblock
 ```
 
 ## Networking
-This section will be cleaned up
+Downloading GRPC packages: 
+pip3 install -r requirements.txt
 
 Building the docker image for all nodes:
 ```bash
@@ -26,6 +27,10 @@ docker build -t node-image .
 
 Helpful tips:
 - Remember to restart the docker server to reset the cache of known nodes. 
+- If GRPC gives you any difficulties, sometimes you need to run the following: 
+```bash
+pip3 install --upgrade google-api-python-client
+```
 
 ## Sources
 - Proto syntax: https://protobuf.dev/programming-guides/proto3/
