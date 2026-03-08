@@ -9,3 +9,4 @@ net/__pycache__
 venv*
 cli/__pycache__
 testing_ground/__pycache__
+testing_ground/wallet.json
