@@ -9,5 +9,8 @@ class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
         self.host_node = host_node # Node python object belonging to node providing service
 
     def GetPeers(self, request, context):
-        # TODO: process request
-        return energy_chain_pb2.GetPeersResponse(peer_addresses=self.host_node.known_peers) # TODO: implement node class
+        if not request.addrMe in self.host_node.known_peers:
+            (self.host_node.known_peers).append(request.addrMe)
+        return energy_chain_pb2.GetPeersResponse(peer_addresses=self.host_node.known_peers)
+
+    # TODO: Implement other rpc defined in proto service
