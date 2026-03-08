@@ -3,11 +3,16 @@ import time
 import sys
 from concurrent import futures
 import queue
+import random
 from net.node_service import NodeService
 import net.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 from core.blockchain import Blockchain
+
+# TODO: the following imports will not be necessary after CLI sends txns
+from core.cryptography import generate_key, sign_tx
+from core.block import calculate_tx_hash
 
 # Get port (probably 50051) from config
 PORT = config.PORT
@@ -38,8 +43,37 @@ class Node():
         # Miner 
             # sleeps for some time, starts mining from queue
 
+    # TODO: will be deleted once CLI working
+    def generate_mock_tx(self, priv_key, pub_key, push_rate, pull_rate):
+        """From tests directory."""
+        grid_rate = energy_chain_pb2.GridRateTx()
+        grid_rate.push_rate = push_rate
+        grid_rate.pull_rate = pull_rate
+        grid_rate.expiry_height = 100
+        grid_rate.grid_address = pub_key
+
+        tx = energy_chain_pb2.Transaction()
+        tx.grid_rate_tx.CopyFrom(grid_rate)
+        sign_tx(tx, priv_key)
+        tx.transaction_hash = calculate_tx_hash(tx)
+        return tx
+
     def discover_txns(self):
-        pass
+        """For now generates a bunch of transactions and adds to mempool."""
+        priv, pub = generate_key()
+
+        # Generate a lot of initial transactions
+        for _ in range(100):
+            txn = self.generate_mock_tx(priv, pub, 5, 12)
+            self.mempool.put(txn)
+
+        while True:
+            try: 
+                txn = self.generate_mock_tx(priv, pub, 5, 12)
+                self.mempool.put(txn)
+                time.sleep(random.randint(2,5))
+            except KeyboardInterrupt:
+                return
 
     def mine_loop(self):
         pass
