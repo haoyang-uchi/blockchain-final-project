@@ -1,15 +1,16 @@
-import configparser
 import grpc
 import time
 import sys
 from concurrent import futures
-from proto import energy_chain_pb2, energy_chain_pb2_grpc
 from node_service import NodeService
+import os
+import config
+
+sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
+import energy_chain_pb2, energy_chain_pb2_grpc
 
 # Get port (probably 50051) from config
-config = configparser.ConfigParser()
-config.read("net_configs.ini")
-PORT = config["network"]["port"]
+PORT = config.PORT
 
 """Logical representation of the entire node. """
 class Node():

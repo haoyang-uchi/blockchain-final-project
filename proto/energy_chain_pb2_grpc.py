@@ -281,3 +281,76 @@ class NodeService(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class RegisterStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.RegisterNode = channel.unary_unary(
+                '/energy_chain.Register/RegisterNode',
+                request_serializer=energy__chain__pb2.RegistrationRequest.SerializeToString,
+                response_deserializer=energy__chain__pb2.RegistrationReply.FromString,
+                _registered_method=True)
+
+
+class RegisterServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def RegisterNode(self, request, context):
+        """Registering Full Node with Network 
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_RegisterServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'RegisterNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterNode,
+                    request_deserializer=energy__chain__pb2.RegistrationRequest.FromString,
+                    response_serializer=energy__chain__pb2.RegistrationReply.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'energy_chain.Register', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('energy_chain.Register', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Register(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def RegisterNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/energy_chain.Register/RegisterNode',
+            energy__chain__pb2.RegistrationRequest.SerializeToString,
+            energy__chain__pb2.RegistrationReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

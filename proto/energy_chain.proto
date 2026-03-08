@@ -25,7 +25,7 @@ service NodeService {
   rpc GetPeers(GetPeersRequest) returns (GetPeersResponse);
 }
 
-service Registrar {
+service Register {
   /* Registering Full Node with Network */
   rpc RegisterNode(RegistrationRequest) returns (RegistrationReply);
 }

@@ -1,8 +1,9 @@
-import grpc
 from concurrent import futures
-import time
+import sys
+import os
 
-from proto import energy_chain_pb2, energy_chain_pb2_grpc
+sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
+import energy_chain_pb2, energy_chain_pb2_grpc
 
 class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
     def __init__(self, host_node):

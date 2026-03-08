@@ -2,12 +2,15 @@ import configparser
 import grpc
 from concurrent import futures
 import logging
-from proto import energy_chain_pb2, energy_chain_pb2_grpc
+import sys
+import os
+import config
+
+sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
+import energy_chain_pb2, energy_chain_pb2_grpc
 
 # Get port from config
-config = configparser.ConfigParser()
-config.read("net_configs.ini")
-PORT = config["network"]["port"]
+PORT = config.PORT
 
 # Python class for register service + register node
 class Registrar(energy_chain_pb2_grpc.RegisterServicer):

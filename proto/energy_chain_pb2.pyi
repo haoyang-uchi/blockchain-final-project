@@ -50,6 +50,24 @@ class GetPeersResponse(_message.Message):
     peer_addresses: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, peer_addresses: _Optional[_Iterable[str]] = ...) -> None: ...
 
+class RegistrationRequest(_message.Message):
+    __slots__ = ("nVersion", "nTime", "addrMe")
+    NVERSION_FIELD_NUMBER: _ClassVar[int]
+    NTIME_FIELD_NUMBER: _ClassVar[int]
+    ADDRME_FIELD_NUMBER: _ClassVar[int]
+    nVersion: int
+    nTime: float
+    addrMe: str
+    def __init__(self, nVersion: _Optional[int] = ..., nTime: _Optional[float] = ..., addrMe: _Optional[str] = ...) -> None: ...
+
+class RegistrationReply(_message.Message):
+    __slots__ = ("success", "last_registered")
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    LAST_REGISTERED_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    last_registered: str
+    def __init__(self, success: bool = ..., last_registered: _Optional[str] = ...) -> None: ...
+
 class Block(_message.Message):
     __slots__ = ("header", "transactions")
     HEADER_FIELD_NUMBER: _ClassVar[int]
