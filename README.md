@@ -63,6 +63,13 @@ import proto.energy_chain_pb2 as energy__chain__pb2
 Clarice's Notes for her PR (will delete later):
 - Decided to create separate proto services for registrar nodes and regular nodes due to the fact I need to store different logic for registrar and regular node classes. 
 
+## CLI
+Run the following command first: 
+```
+export PYTHONPATH=/path/to/blockchain-final-project:$PYTHONPATH
+alias energycli='PYTHONPATH=/path/to/blockchain-final-project python -m cli.cli'
+```
+
 ## Sources
 - Proto syntax: https://protobuf.dev/programming-guides/proto3/
 - Proto formatter: https://formatter.org/protobuf-formatter
