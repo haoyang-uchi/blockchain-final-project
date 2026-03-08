@@ -26,6 +26,7 @@ docker build -t node-image .
 ```
 
 Helpful development tips:
+- Use config parser for the network port
 - Remember to restart the docker server to reset the cache of known nodes. 
 - If GRPC gives you any difficulties, sometimes you need to run the following: 
 ```bash
@@ -37,6 +38,9 @@ cd ./proto
 bash proto_2_py.sh
 ```
 
+Clarice's Notes for her PR (will delete later):
+- Decided to create separate proto services for registrar nodes and regular nodes due to the fact I need to store different logic for registrar and regular node classes. 
+
 ## Sources
 - Proto syntax: https://protobuf.dev/programming-guides/proto3/
 - Proto formatter: https://formatter.org/protobuf-formatter
@@ -45,3 +49,4 @@ bash proto_2_py.sh
 - Python formatter: https://codebeautify.org/python-formatter-beautifier
 - ECDSA: https://pypi.org/project/ecdsa/
 - Black Python formatter: https://pypi.org/project/black/
+- Config parser: https://medium.com/the-pythonworld/how-to-write-and-use-configuration-files-in-python-like-a-pro-8465126ca055 
