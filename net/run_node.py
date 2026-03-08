@@ -56,8 +56,8 @@ class Node():
         Registers node with network by sending registration request to registrar node. Returns registration response
         from registrar.
         """
-        # channel = grpc.insecure_channel('grpc_server' + ":" + PORT)
-        channel = grpc.insecure_channel('localhost' + ":" + PORT)
+        channel = grpc.insecure_channel('grpc_server' + ":" + PORT)
+        # channel = grpc.insecure_channel('localhost' + ":" + PORT)
         stub = energy_chain_pb2_grpc.RegisterStub(channel)
         response = stub.RegisterNode(energy_chain_pb2.RegistrationRequest(nVersion=1, nTime=time.time(), addrMe=self.address))
         print(f"Greeter client received: {response.last_registered}")
