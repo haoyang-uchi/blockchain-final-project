@@ -1,5 +1,4 @@
 grpcio
 grpcio-tools
 ecdsa
-docker
 black
