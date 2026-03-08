@@ -2,14 +2,16 @@ import grpc
 import time
 import sys
 from concurrent import futures
+import queue
 from net.node_service import NodeService
-import docker
 import net.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
+from core.blockchain import Blockchain
 
 # Get port (probably 50051) from config
 PORT = config.PORT
+DISCOVERY_TIMEOUT_SECS = config.DISCOVERY_TIMEOUT_SECS
 
 """Logical representation of the entire node. """
 class Node():
@@ -19,6 +21,8 @@ class Node():
         """
         self.address = my_address
         self.known_peers = []
+        self.mempool = queue.Queue()
+        self.blockchain = Blockchain()
 
     def run(self):
         """
@@ -27,8 +31,18 @@ class Node():
         """
         registration_response = self.register()
         self.discovery(registration_response.last_registered) # Run discovery process
-        self.listening() # TODO: this will be a thread listening for incoming connections on server
+        self.listening() # This times out after 5 seconds. Assumes all nodes join network in that time period.
+        print(f"Node with address {self.address} starts mining")
         # TODO: Mining
+        # TXN discoverer (adds txns to mempool every 2 to 5 secs)
+        # Miner 
+            # sleeps for some time, starts mining from queue
+
+    def discover_txns(self):
+        pass
+
+    def mine_loop(self):
+        pass
 
     def register(self):
         """
@@ -82,7 +96,7 @@ class Node():
         listener.add_insecure_port(f"{self.address}:{PORT}")
         listener.start()
         print("Node server started, listening on " + f"{self.address}:{PORT}")
-        listener.wait_for_termination()
+        listener.wait_for_termination(timeout=DISCOVERY_TIMEOUT_SECS)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
