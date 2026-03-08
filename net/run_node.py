@@ -12,7 +12,7 @@ config.read("net_configs.ini")
 PORT = config["network"]["port"]
 
 """Logical representation of the entire node. """
-class Node(energy_chain_pb2_grpc.NodeServiceServicer):
+class Node():
     def __init__(self, my_address):
         """
         Given a the docker address of the docker container the code runs in initializes a node.
