@@ -15,6 +15,12 @@ python3 -m tests.test_basic
 python3 -m tests.test_multiblock
 ```
 
+## Networking
+This section is to be cleaned up. 
+
+Helpful tips:
+- Remember to restart the docker server to reset the cache of known nodes. 
+
 ## Sources
 - Proto syntax: https://protobuf.dev/programming-guides/proto3/
 - Proto formatter: https://formatter.org/protobuf-formatter
