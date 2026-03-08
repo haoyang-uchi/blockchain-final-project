@@ -44,7 +44,7 @@ python run_node.py (output from before - i.e. 172.17.0.3)
 All containers will automatically be removed when you exit interactive mode.
 
 Helpful development tips:
-- Use config parser for the network port
+- Use variable in config.py for the network port
 - Remember to restart the docker server to reset the cache of known nodes. 
 - If GRPC gives you any difficulties, sometimes you need to run the following: 
 ```bash
