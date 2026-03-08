@@ -1,4 +1,6 @@
 /* energy_chain.proto */
+/* IMPORTANT: Upon changing, run bash proto_2_py.sh. Change the import statement 
+in proto/energy_chain_pb2_grpc.py to import proto.energy_chain_pb2 as energy__chain__pb2 */
 
 syntax = "proto3";
 

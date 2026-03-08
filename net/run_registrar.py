@@ -4,10 +4,9 @@ from concurrent import futures
 import logging
 import sys
 import os
-import config
-
-sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
-import energy_chain_pb2, energy_chain_pb2_grpc
+import net.config as config
+import proto.energy_chain_pb2 as energy_chain_pb2
+import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 
 # Get port from config
 PORT = config.PORT

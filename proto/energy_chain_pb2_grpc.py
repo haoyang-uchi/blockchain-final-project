@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import energy_chain_pb2 as energy__chain__pb2
+import proto.energy_chain_pb2 as energy__chain__pb2
 
 GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__

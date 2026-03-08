@@ -2,12 +2,11 @@ import grpc
 import time
 import sys
 from concurrent import futures
-from node_service import NodeService
-import os
-import config
-
-sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
-import energy_chain_pb2, energy_chain_pb2_grpc
+from net.node_service import NodeService
+import docker
+import net.config as config
+import proto.energy_chain_pb2 as energy_chain_pb2
+import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 
 # Get port (probably 50051) from config
 PORT = config.PORT
@@ -89,6 +88,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         raise Exception("Incorrect arguments")
 
-    node = Node(sys.argv[1]) # Pass in address of docker container
+    ip_add = sys.argv[1]
+    node = Node(ip_add) # Pass in address of docker container
     node.run()
         

@@ -29,22 +29,22 @@ bash build.sh
 ```bash
 bash launch_registrar.sh
 // In Docker container shell:
-cd shared/net
-python run_registrar.py
+cd shared
+python3 -m net.run_registrar.py
 ```
 3. For every regular node you want to spawn, open a new terminal window and execute the following:
 ```bash
 bash launch_node.sh <unique container name>
 // In Docker container shell:
-cd shared/net
+cd shared
 hostname -I (note the output)
-python run_node.py (output from before - i.e. 172.17.0.3)
+python3 -m net.run_node (output from before - i.e. 172.17.0.3)
 ```
 
 All containers will automatically be removed when you exit interactive mode.
 
 Helpful development tips:
-- Use config parser for the network port
+- Use variable in config.py for the network port
 - Remember to restart the docker server to reset the cache of known nodes. 
 - If GRPC gives you any difficulties, sometimes you need to run the following: 
 ```bash
@@ -54,6 +54,10 @@ pip3 install --upgrade google-api-python-client
 ```bash
 cd ./proto
 bash proto_2_py.sh
+```
+Then for proto/energy_chain_pb2_grpc.py, be sure to change the import statement to
+```python
+import proto.energy_chain_pb2 as energy__chain__pb2
 ```
 
 Clarice's Notes for her PR (will delete later):
@@ -68,3 +72,4 @@ Clarice's Notes for her PR (will delete later):
 - ECDSA: https://pypi.org/project/ecdsa/
 - Black Python formatter: https://pypi.org/project/black/
 - Config parser: https://medium.com/the-pythonworld/how-to-write-and-use-configuration-files-in-python-like-a-pro-8465126ca055 
+- Get IP address of container in Docker Python SDK: https://stackoverflow.com/questions/58338051/how-to-get-the-ip-address-of-docker-container-using-docker-sdk-for-python 
