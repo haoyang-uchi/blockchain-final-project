@@ -55,6 +55,10 @@ pip3 install --upgrade google-api-python-client
 cd ./proto
 bash proto_2_py.sh
 ```
+Then for proto/energy_chain_pb2_grpc.py, be sure to change the import statement to
+```python
+import proto.energy_chain_pb2 as energy__chain__pb2
+```
 
 Clarice's Notes for her PR (will delete later):
 - Decided to create separate proto services for registrar nodes and regular nodes due to the fact I need to store different logic for registrar and regular node classes. 

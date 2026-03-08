@@ -2,9 +2,9 @@ import grpc
 import time
 import sys
 from concurrent import futures
-from node_service import NodeService
+from net.node_service import NodeService
 import os
-import config
+import net.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 

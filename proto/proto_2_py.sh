@@ -1,1 +1,2 @@
 python3 -m grpc_tools.protoc -I./ --python_out=. --pyi_out=. --grpc_python_out=. ./energy_chain.proto
+# BE SURE TO CHANGE THE IMPORT STATEMENT ON proto/energy_chain_pb2_grpc.py to import proto.energy_chain_pb2 as energy__chain__pb2
