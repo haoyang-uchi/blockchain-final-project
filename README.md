@@ -29,16 +29,16 @@ bash build.sh
 ```bash
 bash launch_registrar.sh
 // In Docker container shell:
-cd shared/net
-python run_registrar.py
+cd shared
+python3 -m net.run_registrar.py
 ```
 3. For every regular node you want to spawn, open a new terminal window and execute the following:
 ```bash
 bash launch_node.sh <unique container name>
 // In Docker container shell:
-cd shared/net
+cd shared
 hostname -I (note the output)
-python run_node.py (output from before - i.e. 172.17.0.3)
+python3 -m net.run_node (output from before - i.e. 172.17.0.3)
 ```
 
 All containers will automatically be removed when you exit interactive mode.

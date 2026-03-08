@@ -1,9 +1,8 @@
 from concurrent import futures
 import sys
 import os
-
-sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
-import energy_chain_pb2, energy_chain_pb2_grpc
+import proto.energy_chain_pb2 as energy_chain_pb2
+import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 
 class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
     def __init__(self, host_node):

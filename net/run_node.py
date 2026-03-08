@@ -5,9 +5,8 @@ from concurrent import futures
 from node_service import NodeService
 import os
 import config
-
-sys.path.append(os.path.abspath("../proto")) # TODO: find a better way to import
-import energy_chain_pb2, energy_chain_pb2_grpc
+import proto.energy_chain_pb2 as energy_chain_pb2
+import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 
 # Get port (probably 50051) from config
 PORT = config.PORT
