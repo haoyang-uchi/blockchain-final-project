@@ -3,7 +3,7 @@ import time
 import sys
 from concurrent import futures
 from net.node_service import NodeService
-import os
+import docker
 import net.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
@@ -88,6 +88,10 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         raise Exception("Incorrect arguments")
 
-    node = Node(sys.argv[1]) # Pass in address of docker container
+    client = docker.from_env()
+    container = client.containers.get(sys.argv[1])
+    ip_add = container.attrs['NetworkSettings']['IPAddress']
+    print(f"Node container running on address: {ip_add}")
+    node = Node(ip_add) # Pass in address of docker container
     node.run()
         

@@ -72,3 +72,4 @@ Clarice's Notes for her PR (will delete later):
 - ECDSA: https://pypi.org/project/ecdsa/
 - Black Python formatter: https://pypi.org/project/black/
 - Config parser: https://medium.com/the-pythonworld/how-to-write-and-use-configuration-files-in-python-like-a-pro-8465126ca055 
+- Get IP address of container in Docker Python SDK: https://stackoverflow.com/questions/58338051/how-to-get-the-ip-address-of-docker-container-using-docker-sdk-for-python 
