@@ -8,4 +8,4 @@ net/__pycache__
 .vscode
 venv*
 cli/__pycache__
-testing_ground
+testing_ground/__pycache__
