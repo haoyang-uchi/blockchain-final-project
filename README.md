@@ -19,11 +19,29 @@ python3 -m tests.test_multiblock
 Downloading GRPC packages: 
 pip3 install -r requirements.txt
 
-Building the docker image for all nodes:
+Testing the docker (all in -it interactive mode to verify it works):
+1. Build image
 ```bash
-cd ./net
-docker build -t node-image .
+cd ./net/test_launch_docker
+bash build.sh
 ```
+2. Launch registrar + run registrar server
+```bash
+bash launch_registrar.sh
+// In Docker container shell:
+cd shared/net
+python run_registrar.py
+```
+3. For every regular node you want to spawn, open a new terminal window and execute the following:
+```bash
+bash launch_node.sh <unique container name>
+// In Docker container shell:
+cd shared/net
+hostname -I (note the output)
+python run_node.py (output from before - i.e. 172.17.0.3)
+```
+
+All containers will automatically be removed when you exit interactive mode.
 
 Helpful development tips:
 - Use config parser for the network port
