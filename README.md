@@ -25,11 +25,16 @@ cd ./net
 docker build -t node-image .
 ```
 
-Helpful tips:
+Helpful development tips:
 - Remember to restart the docker server to reset the cache of known nodes. 
 - If GRPC gives you any difficulties, sometimes you need to run the following: 
 ```bash
 pip3 install --upgrade google-api-python-client
+```
+- To regenerate the python files after editing anything in the proto directory, run the following:
+```bash
+cd ./proto
+bash proto_2_py.sh
 ```
 
 ## Sources
