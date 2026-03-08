@@ -16,7 +16,13 @@ python3 -m tests.test_multiblock
 ```
 
 ## Networking
-This section is to be cleaned up. 
+This section will be cleaned up
+
+Building the docker image for all nodes:
+```bash
+cd ./net
+docker build -t node-image .
+```
 
 Helpful tips:
 - Remember to restart the docker server to reset the cache of known nodes. 
