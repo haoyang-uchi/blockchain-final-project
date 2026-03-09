@@ -89,3 +89,6 @@ alias energycli='PYTHONPATH=/path/to/blockchain-final-project python -m cli.cli'
 - Black Python formatter: https://pypi.org/project/black/
 - Config parser: https://medium.com/the-pythonworld/how-to-write-and-use-configuration-files-in-python-like-a-pro-8465126ca055 
 - Threadsafe queue implementation: https://docs.python.org/3/library/queue.html
+- Creating the gRPC server: https://grpc.io/docs/languages/python/basics/
+- Adding sys path to fix the module issues: https://www.geeksforgeeks.org/python/sys-path-in-python/
+- Dockerfile setup: https://www.geeksforgeeks.org/cloud-computing/what-is-dockerfile/
