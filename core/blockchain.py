@@ -4,6 +4,8 @@ from core.block import create_new_block, calculate_header_hash
 from core.state import State, GRID_ADDRESS
 from core.miner import verify
 from state.execution import apply_block
+import os
+import json
 import proto.energy_chain_pb2 as pb2
 from typing import List
 
@@ -20,15 +22,19 @@ class Blockchain:
         # giving the grid 100 GWh (which is a lot)
         self.state.get_account(GRID_ADDRESS).energy_wh = 100_000_000_000
         # giving 1 trillion microcoins
-        self.state.get_account(GRID_ADDRESS).coins_micro = 1_000_000_000_000
+        self.state.get_account(GRID_ADDRESS).micro_coins = 1_000_000_000_000
 
-        # testing accounts
-        # **REMOVE LATER**
-        test_user_a = "userA"
-        self.state.update_account(test_user_a, energy_delta=5000, coins_delta=100_000)
-
-        test_user_b = "userB"
-        self.state.update_account(test_user_b, energy_delta=0, coins_delta=5_000_000)
+        # fund local CLI testing wallets automatically based on standard names
+        try:
+            if os.path.exists("user_wallet.json"):
+                with open("user_wallet.json", "r") as f:
+                    wallet_data = json.load(f)
+                    user_pub = wallet_data.get("public_key_hex")
+                    if user_pub:
+                        # Give the user testing wallet plenty of coins and energy
+                        self.state.update_account(user_pub, energy_delta=5000, coins_delta=5_000_000)
+        except Exception as e:
+            print(f"Genesis warning: could not fund local user_wallet.json: {e}")
 
         self.blocks.append(genesis)
         print("Created Genesis Block")
