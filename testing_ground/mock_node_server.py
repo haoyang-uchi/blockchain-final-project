@@ -1,5 +1,12 @@
-from concurrent import futures
+import os
+import sys
+
+# Add project root to sys.path
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root)
+
 import grpc
+from concurrent import futures
 
 import proto.energy_chain_pb2 as pb2
 import proto.energy_chain_pb2_grpc as pb2_grpc
