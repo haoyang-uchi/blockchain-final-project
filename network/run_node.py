@@ -28,7 +28,7 @@ from state.validation import validate_order_tx, ValidationContext
 PORT = "58333"
 DISCOVERY_TIMEOUT_SECS = 3
 # making the mining harder so that the network is more stable
-MINING_DIFFICULTY = 0x1e0fffff
+DIFFICULTY = 0x1e0fffff
 MAX_TXN_PER_BLOCK = 10 # TODO: maybe move this in blockchain class
 
 """Logical representation of the entire node. """
