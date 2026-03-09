@@ -54,3 +54,14 @@ class State:
             grid.coins_micro += settlement_amount
 
         miner.coins_micro += fee
+
+    def copy(self):
+        new_state = State()
+        for address, account in self.accounts.items():
+            new_acc = Account(address)
+            new_acc.energy_wh = account.energy_wh
+            new_acc.micro_coins = account.micro_coins
+            new_acc.nonce = account.nonce
+            new_state.accounts[address] = new_acc
+
+        return new_state
