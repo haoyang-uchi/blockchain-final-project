@@ -10,8 +10,7 @@ def apply_block(block, state):
     working = state.copy()
     height = block.header.height
 
-    active_grid_rate = find_current_grid_rate(working, block)
-    ctx = ValidationContext(height=height, grid_rate=active_grid_rate)
+    ctx = ValidationContext(height=height, grid_rate=working.active_grid_rate)
 
     grid_rate_txs = []
     order_txs = []
@@ -33,6 +32,7 @@ def apply_block(block, state):
         if not ok:
             return state, False, f"GridRateTx invalid: {reason}"
         ctx = ValidationContext(height=height, grid_rate=tx.grid_rate_tx)
+        working.active_grid_rate = tx.grid_rate_tx
 
     for tx in order_txs:
         ok, reason = validate_order_tx(tx, ctx, working)
@@ -60,7 +60,3 @@ def apply_block(block, state):
         )
 
     return working, True, ""
-
-
-def find_current_grid_rate(state: State, block: pb2.Block):
-    return None

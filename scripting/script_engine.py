@@ -90,7 +90,6 @@ class ScriptEngine:
                 self.stack.append(1)
             else:
                 self.stack.append(0)
-            self.stack.append(1 if a > b else 0)
 
         # syntax is 'a b GTE'
         elif op == "GTE":

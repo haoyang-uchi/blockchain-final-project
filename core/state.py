@@ -3,13 +3,14 @@
 from typing import Dict
 from core.account import Account
 
-# I took the alphabet number position of the first letter in each of our CNETs
-GRID_ADDRESS = "0x000000000000000000000000000000034811"
+# address generated when the grid wallet was created and it's stored in grid_wallet.json
+GRID_ADDRESS = "86d7f9a234c7db9475060831b6a5d2a4b0853c7ba3666d93a9a8e4a3a0636e0e233297aba2250a4e5448f580cd8cd922b8445f5e05492beda2c6a2ffbed9496d"
 
 
 class State:
     def __init__(self):
         self.accounts: Dict[str, Account] = {}
+        self.active_grid_rate = None
 
     # fetches an account given an address
     def get_account(self, address: str) -> Account:
@@ -63,5 +64,6 @@ class State:
             new_acc.micro_coins = account.micro_coins
             new_acc.nonce = account.nonce
             new_state.accounts[address] = new_acc
-
+            
+        new_state.active_grid_rate = self.active_grid_rate
         return new_state
