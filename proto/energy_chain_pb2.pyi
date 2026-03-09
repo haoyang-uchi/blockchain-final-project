@@ -76,6 +76,24 @@ class RegistrationReply(_message.Message):
     last_registered: str
     def __init__(self, success: bool = ..., last_registered: _Optional[str] = ...) -> None: ...
 
+class GetAccountRequest(_message.Message):
+    __slots__ = ("address",)
+    ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    address: str
+    def __init__(self, address: _Optional[str] = ...) -> None: ...
+
+class AccountResponse(_message.Message):
+    __slots__ = ("address", "energy_wh", "micro_coins", "nonce")
+    ADDRESS_FIELD_NUMBER: _ClassVar[int]
+    ENERGY_WH_FIELD_NUMBER: _ClassVar[int]
+    MICRO_COINS_FIELD_NUMBER: _ClassVar[int]
+    NONCE_FIELD_NUMBER: _ClassVar[int]
+    address: str
+    energy_wh: int
+    micro_coins: int
+    nonce: int
+    def __init__(self, address: _Optional[str] = ..., energy_wh: _Optional[int] = ..., micro_coins: _Optional[int] = ..., nonce: _Optional[int] = ...) -> None: ...
+
 class Block(_message.Message):
     __slots__ = ("header", "transactions")
     HEADER_FIELD_NUMBER: _ClassVar[int]

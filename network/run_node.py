@@ -1,3 +1,5 @@
+import os
+import json
 import grpc
 import time
 import sys
@@ -40,6 +42,9 @@ class Node():
         print(f"[IP: {self.address}] Starting Node")
         genesis_hash = calculate_header_hash(self.blockchain.get_tip().header)
         print(f"Genesis Block Hash: {genesis_hash}")
+        
+        # Start the automatic faucet monitor
+        threading.Thread(target=self.auto_faucet_loop, daemon=True).start()
 
     def run(self):
         """
@@ -120,17 +125,43 @@ class Node():
 
         while True:
             try:
-                # Collect transactions
+                # collect transactions
                 txns_to_mine = []
-                for _ in range(MAX_TXN_PER_BLOCK):
-                    if self.mempool.empty():
-                        break
-                    txns_to_mine.append(self.mempool.get())
+                while len(txns_to_mine) < MAX_TXN_PER_BLOCK:
+                    try:
+                        tx = self.mempool.get(block=False)
+                        
+                        # Lazy Pruning: skip if already in chain
+                        if any(b.has_transaction(tx.transaction_hash) for b in self.blockchain.chain):
+                            continue
 
-                # Attempt to mine block
-                self.mining_interrupt.clear()
-                tip = self.blockchain.get_tip()
-                mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY, stop_event=self.mining_interrupt)
+                        # Check nonce against state
+                        sender = ""
+                        is_faucet = False
+                        if tx.HasField("order_tx"):
+                            sender = tx.order_tx.sender_address
+                            tx_nonce = tx.order_tx.nonce
+                            is_faucet = (tx.order_tx.script == "FAUCET")
+                        elif tx.HasField("grid_rate_tx"):
+                            sender = tx.grid_rate_tx.grid_address
+                            tx_nonce = 0 # TODO: Nonce for grid rate
+                        
+                        if sender:
+                            account = self.blockchain.state.get_account(sender)
+                            # Standard tx: must be > current nonce
+                            # Faucet tx: nonce is 0, account.nonce is 0. allowed.
+                            if not is_faucet and account.nonce >= tx_nonce and tx.HasField("order_tx"):
+                                continue
+                                
+                        txns_to_mine.append(tx)
+                    except queue.Empty:
+                        break
+
+                if len(txns_to_mine) > 0 or random.random() < 0.1: # Mine empty blocks sometimes
+                    print(f"[Miner] Mining Block with {len(txns_to_mine)} transactions...")
+                    self.mining_interrupt.clear()
+                    tip = self.blockchain.get_tip()
+                    mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY, stop_event=self.mining_interrupt)
                 if mined_block:
                     success = self.blockchain.add_block(mined_block)
                     print(f"Block {mined_block.header.height} Appended: {success}")
@@ -154,6 +185,59 @@ class Node():
 
             # Upon finishing, sleep for random amount of time to avoid conflicts
             time.sleep(random.randint(3,5))
+
+    def auto_faucet_loop(self):
+        """Background thread that watches for any .json wallets and funds them if empty."""
+        pending_faucets = set() # Track addresses we've already submitted for
+        
+        while True:
+            try:
+                for filename in os.listdir("."):
+                    if not filename.endswith(".json") or filename == "grid_wallet.json" or filename == "package.json":
+                        continue
+                        
+                    with open(filename, "r") as f:
+                        try:
+                            data = json.load(f)
+                        except:
+                            continue
+                            
+                        user_pub = data.get("public_key_hex")
+                        user_priv = data.get("private_key_hex")
+                        
+                        if user_pub and user_priv:
+                            if user_pub in pending_faucets:
+                                # Re-check if it actually settled
+                                account = self.blockchain.state.get_account(user_pub)
+                                if account.micro_coins > 0:
+                                    pending_faucets.remove(user_pub)
+                                continue
+
+                            account = self.blockchain.state.get_account(user_pub)
+                            if account.micro_coins == 0 and account.energy_wh == 0 and account.nonce == 0:
+                                order = energy_chain_pb2.OrderTx()
+                                order.sender_address = user_pub
+                                order.type = energy_chain_pb2.PUSH
+                                order.energy_wh = 1 
+                                order.limit_price = 1
+                                order.nonce = 0 
+                                order.script = "FAUCET"
+                                
+                                tx = energy_chain_pb2.Transaction()
+                                tx.order_tx.CopyFrom(order)
+                                sign_tx(tx, user_priv)
+                                tx.transaction_hash = calculate_tx_hash(tx)
+                                
+                                if tx.transaction_hash not in self.seen_transactions:
+                                    print(f"[IP: {self.address}] [Faucet] Found {filename}, requesting grant for {user_pub[:16]}...")
+                                    self.mempool.put(tx)
+                                    self.seen_transactions.add(tx.transaction_hash)
+                                    pending_faucets.add(user_pub)
+                                    self.broadcast_transaction(tx)
+                                    
+            except Exception:
+                pass
+            time.sleep(5)
 
     def broadcast_transaction(self, tx_proto):
         print(f"[IP: {self.address}] [Broadcast] New Transaction Hash: {tx_proto.transaction_hash}")

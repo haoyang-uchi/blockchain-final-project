@@ -19,6 +19,9 @@ services:
       - "58334:58333"
     depends_on:
       - dns_seed
+    volumes:
+      - ./user_wallet.json:/app/user_wallet.json
+      - ./grid_wallet.json:/app/grid_wallet.json
     links:
       - dns_seed:dns_seed
 
@@ -31,6 +34,9 @@ services:
     depends_on:
       - dns_seed
       - node_a
+    volumes:
+      - ./user_wallet.json:/app/user_wallet.json
+      - ./grid_wallet.json:/app/grid_wallet.json
     links:
       - dns_seed:dns_seed
 
@@ -43,5 +49,8 @@ services:
     depends_on:
       - dns_seed
       - node_b
+    volumes:
+      - ./user_wallet.json:/app/user_wallet.json
+      - ./grid_wallet.json:/app/grid_wallet.json
     links:
       - dns_seed:dns_seed

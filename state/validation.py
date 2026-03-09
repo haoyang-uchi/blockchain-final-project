@@ -24,6 +24,14 @@ def validate_order_tx(tx, ctx, state):
     if not verify_tx_signature(tx):
         return False, "OrderTx invalid signature"
     
+    # Simulation Faucet: bypass checks for new wallets requesting initial funds
+    if order.script == "FAUCET":
+        if order.nonce != 0:
+            return False, "FAUCET request only allowed with nonce 0"
+        if account.micro_coins > 0 or account.energy_wh > 0 or account.nonce > 0:
+            return False, "FAUCET only allowed for new, empty accounts"
+        return True, ""
+    
     if ctx.grid_rate is None:
         return False, "OrderTx no active GridRateTx, cannot evaluate order"
     

@@ -44,16 +44,16 @@ class State:
         # user is selling energy to the grid
         if push:
             user.energy_wh -= energy_amount
-            user.coins_micro += settlement_amount
+            user.micro_coins += settlement_amount
             grid.energy_wh += energy_amount
-            grid.coins_micro -= settlement_amount + fee
+            grid.micro_coins -= settlement_amount + fee
         else:  # user is buying energy from the grid
             user.energy_wh += energy_amount
-            user.coins_micro -= settlement_amount + fee
+            user.micro_coins -= settlement_amount + fee
             grid.energy_wh -= energy_amount
-            grid.coins_micro += settlement_amount
+            grid.micro_coins += settlement_amount
 
-        miner.coins_micro += fee
+        miner.micro_coins += fee
 
     def copy(self):
         new_state = State()

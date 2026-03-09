@@ -56,3 +56,11 @@ class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
     def GetTip(self, request, context):
         tip_block = self.host_node.blockchain.get_tip()
         return tip_block
+    def GetAccount(self, request, context):
+        account = self.host_node.blockchain.state.get_account(request.address)
+        return energy_chain_pb2.AccountResponse(
+            address=request.address,
+            energy_wh=account.energy_wh,
+            micro_coins=account.micro_coins,
+            nonce=account.nonce
+        )

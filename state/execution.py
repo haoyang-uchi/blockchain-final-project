@@ -38,8 +38,27 @@ def apply_block(block, state):
         ok, reason = validate_order_tx(tx, ctx, working)
         if not ok:
             return state, False, f"OrderTx invalid: {reason}"
-        account = working.get_account(tx.order_tx.sender_address)
-        account.nonce = tx.order_tx.nonce
+        
+        ord = tx.order_tx
+        account = working.get_account(ord.sender_address)
+        
+        # Increment nonce for real trades, but keep at 0 for Faucet
+        if ord.script != "FAUCET":
+            account.nonce = ord.nonce
+
+        # Faucet Grant: Transfer funds from Grid to new User
+        if ord.script == "FAUCET":
+            grid = working.get_account(GRID_ADDRESS)
+            grant_coins = 5_000_000
+            grant_energy = 5_000
+            
+            # Simple transfer logic
+            grid.micro_coins -= grant_coins
+            grid.energy_wh -= grant_energy
+            account.micro_coins += grant_coins
+            account.energy_wh += grant_energy
+            
+            print(f"Faucet: granted {grant_coins} coins and {grant_energy} Wh to {ord.sender_address[:16]}...")
 
     for tx in trade_txs:
         ok, reason = validate_trade_tx(tx, ctx, working)
