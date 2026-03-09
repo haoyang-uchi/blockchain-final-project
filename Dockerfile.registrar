@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copying over directories
 COPY core/ core/
-COPY net/ net/
+COPY network/ network/
 COPY proto/ proto/
 COPY scripting/ scripting/
 COPY state/ state/
@@ -17,4 +17,4 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 
 # Running the Registrar entry point
-CMD ["python", "-u", "-m", "net.run_registrar"]
+CMD ["python", "-u", "-m", "network.run_registrar"]

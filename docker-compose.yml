@@ -13,8 +13,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.node
-    command: ["python", "-u", "-m", "net.run_node", "node_a"]
+    command: ["python", "-u", "-m", "network.run_node", "node_a"]
     container_name: node_a
+    ports:
+      - "58334:58333"
     depends_on:
       - dns_seed
     links:
@@ -24,7 +26,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.node
-    command: ["python", "-u", "-m", "net.run_node", "node_b"]
+    command: ["python", "-u", "-m", "network.run_node", "node_b"]
     container_name: node_b
     depends_on:
       - dns_seed
@@ -36,7 +38,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.node
-    command: ["python", "-u", "-m", "net.run_node", "node_c"]
+    command: ["python", "-u", "-m", "network.run_node", "node_c"]
     container_name: node_c
     depends_on:
       - dns_seed

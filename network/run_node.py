@@ -5,8 +5,8 @@ from concurrent import futures
 import queue
 import random
 import threading
-from net.node_service import NodeService
-import net.config as config
+from network.node_service import NodeService
+import network.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 from core.blockchain import Blockchain
@@ -57,12 +57,10 @@ class Node():
         
         self.listening_newnodes() # This times out after 10 seconds. Assumes all nodes join network in that time period.
 
-        txn_discovery_thread = threading.Thread(target=self.discover_txns, args=())
-        txn_discovery_thread.start()
+        print(f"[IP: {self.address}] Node starts mining")
         miner = threading.Thread(target=self.mine_loop, args=())
         miner.start()
         # Run node for as long as the threads run - should only be stopped upon keyboard interrupt
-        txn_discovery_thread.join()
         miner.join()
 
     def register(self):
@@ -115,78 +113,39 @@ class Node():
         self.listener.start()
         time.sleep(DISCOVERY_TIMEOUT_SECS)
 
-    # TODO: will be deleted once CLI working
-    def generate_mock_tx(self, priv_key, pub_key, push_rate, pull_rate):
-        """From tests directory."""
-        grid_rate = energy_chain_pb2.GridRateTx()
-        grid_rate.push_rate = push_rate
-        grid_rate.pull_rate = pull_rate
-        grid_rate.expiry_height = 100
-        grid_rate.grid_address = pub_key
-
-        tx = energy_chain_pb2.Transaction()
-        tx.grid_rate_tx.CopyFrom(grid_rate)
-        sign_tx(tx, priv_key)
-        tx.transaction_hash = calculate_tx_hash(tx)
-        return tx
-
-    def discover_txns(self):
-        """For now generates a bunch of transactions and adds to mempool."""
-        wallet = Wallet.generate()
-        priv, pub = wallet.private_key_hex, wallet.public_key_hex
-
-        # Generate a lot of initial transactions
-        for _ in range(100):
-            txn = self.generate_mock_tx(priv, pub, 5, 12)
-            self.mempool.put(txn)
-
-        while True:
-            try:
-                txn = self.generate_mock_tx(priv, pub, 5, 12)
-                self.mempool.put(txn)
-                time.sleep(random.randint(5,10))
-            except KeyboardInterrupt:
-                print("Shutting down transaction discovery upon keyboard interrupt")
-                return
 
     def mine_loop(self):
-        # Sleep initially to allow initial transactions to accumulate
-        # and more importantly, to allow docker DNS to populate and node listeners to bind
-        time.sleep(15)
+        # Sleep initially to allow docker DNS to populate and node listeners to bind
+        time.sleep(2)
 
         while True:
             try:
-                if not self.mempool.empty():
-                    # Collect transactions
-                    txns_to_mine = []
-                    for _ in range(MAX_TXN_PER_BLOCK):
-                        if not self.mempool.empty():
-                            break
-                        txns_to_mine.append(self.mempool.get())
+                # Collect transactions
+                txns_to_mine = []
+                for _ in range(MAX_TXN_PER_BLOCK):
+                    if self.mempool.empty():
+                        break
+                    txns_to_mine.append(self.mempool.get())
 
-                    # Attempt to mine block
-                    self.mining_interrupt.clear()
-                    tip = self.blockchain.get_tip()
-                    mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY, stop_event=self.mining_interrupt)
-                    if mined_block:
-                        success = self.blockchain.add_block(mined_block)
-                        print(f"Block {mined_block.header.height} Appended: {success}")
-                        if success:
-                            # mark as seen and broadcast
-                            block_hash = calculate_header_hash(mined_block.header)
-                            self.seen_blocks.add(block_hash)
-                            
-                            print(f"[IP: {self.address}] [Block Mined] Block Hash: {block_hash}")
-                            
-                            # remove transactions from mempool that are now mined
-                            # (not strictly necessary with our mock generate, but good practice)
-                            
-                            # broadcast to network
-                            thread = threading.Thread(target=self.broadcast_block, args=(mined_block,))
-                            thread.start()
-                    else:
-                        print("Failed to mine Block")
-                        return
+                # Attempt to mine block
+                self.mining_interrupt.clear()
+                tip = self.blockchain.get_tip()
+                mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY, stop_event=self.mining_interrupt)
+                if mined_block:
+                    success = self.blockchain.add_block(mined_block)
+                    print(f"Block {mined_block.header.height} Appended: {success}")
+                    if success:
+                        # mark as seen and broadcast
+                        block_hash = calculate_header_hash(mined_block.header)
+                        self.seen_blocks.add(block_hash)
+                        
+                        print(f"[IP: {self.address}] [Block Mined] Block Hash: {block_hash}")
+                        
+                        # broadcast to network
+                        thread = threading.Thread(target=self.broadcast_block, args=(mined_block,))
+                        thread.start()
+                else:
+                    print("Mining interrupted or failed")
 
             except KeyboardInterrupt:
                 print("Shutting down mining upon keyboard interrupt")

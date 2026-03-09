@@ -4,7 +4,7 @@ from concurrent import futures
 import logging
 import sys
 import os
-import net.config as config
+import network.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 

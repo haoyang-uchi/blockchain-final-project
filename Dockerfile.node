@@ -7,12 +7,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copying over directories
 COPY core/ core/
-COPY net/ net/
+COPY network/ network/
 COPY proto/ proto/
 COPY scripting/ scripting/
 COPY state/ state/
 
-# Expose port from net/config.py
+# Expose port from network/config.py
 EXPOSE 58333
 
 ENV PYTHONUNBUFFERED=1
