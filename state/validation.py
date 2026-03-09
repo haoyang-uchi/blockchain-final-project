@@ -2,6 +2,7 @@
 
 from core.state import State, GRID_ADDRESS
 from core.cryptography import verify_tx_signature
+from scripting.script_engine import ScriptEngine
 import proto.energy_chain_pb2 as pb2
 
 """
@@ -52,6 +53,15 @@ def validate_order_tx(tx, ctx, state):
     
     else:
         return False, f"OrderTx unknown order type {order.type}"
+    
+    context = {
+        "height": ctx.height,
+        "push_rate": gr.push_rate,
+        "pull_rate": gr.pull_rate,
+    }
+    engine = ScriptEngine(order.script, context)
+    if not engine.execute():
+        return False, "OrderTx script execution failed"
     
     if order.type == pb2.PUSH:
         if account.energy_wh < order.energy_wh:

@@ -12,9 +12,9 @@ import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 from core.blockchain import Blockchain
 from core.miner import construct_and_mine_block
 
-# TODO: the following imports will not be necessary after CLI sends txns
-from core.cryptography import generate_key, sign_tx
-from core.block import calculate_tx_hash
+from core.wallet import Wallet
+from core.cryptography import sign_tx
+from core.block import calculate_tx_hash, calculate_header_hash
 
 # Load values from config
 PORT = config.PORT
@@ -32,6 +32,14 @@ class Node():
         self.known_peers = []
         self.mempool = queue.Queue()
         self.blockchain = Blockchain()
+        
+        self.seen_transactions = set()
+        self.seen_blocks = set()
+        self.mining_interrupt = threading.Event()
+        
+        print(f"[IP: {self.address}] Starting Node")
+        genesis_hash = calculate_header_hash(self.blockchain.get_tip().header)
+        print(f"Genesis Block Hash: {genesis_hash}")
 
     def run(self):
         """
@@ -39,9 +47,15 @@ class Node():
         listening for new nodes joining the network.  
         """
         registration_response = self.register()
+        
+        known_peers_arr = [registration_response.last_registered] if registration_response.last_registered else []
+        print(f"[IP: {self.address}] [Registration] Response known peers: {known_peers_arr}")
+        
         self.discovery(registration_response.last_registered) # Run discovery process
-        self.listening_newnodes() # This times out after 5 seconds. Assumes all nodes join network in that time period.
-        print(f"Node with address {self.address} starts mining")
+        
+        print(f"[IP: {self.address}] Final known peers before mining: {self.known_peers}")
+        
+        self.listening_newnodes() # This times out after 10 seconds. Assumes all nodes join network in that time period.
 
         txn_discovery_thread = threading.Thread(target=self.discover_txns, args=())
         txn_discovery_thread.start()
@@ -56,11 +70,11 @@ class Node():
         Registers node with network by sending registration request to registrar node. Returns registration response
         from registrar.
         """
-        channel = grpc.insecure_channel('grpc_server' + ":" + PORT)
+        print(f"[IP: {self.address}] Registering with DNS_SEED at address: dns_seed:{PORT}")
+        channel = grpc.insecure_channel('dns_seed' + ":" + PORT)
         # channel = grpc.insecure_channel('localhost' + ":" + PORT)
         stub = energy_chain_pb2_grpc.RegisterStub(channel)
         response = stub.RegisterNode(energy_chain_pb2.RegistrationRequest(nVersion=1, nTime=time.time(), addrMe=self.address))
-        print(f"Greeter client received: {response.last_registered}")
         return response
 
     def discovery(self, contact_node_addr: str):
@@ -74,21 +88,18 @@ class Node():
             return 
 
         # Contact node
-        print(f"Attempting handshake {self.address} to {contact_node_addr}")
+        print(f"[IP: {self.address}] [Handshake] Peer IP: {contact_node_addr}")
         # Create channel to node trying to contact
         channel = grpc.insecure_channel(contact_node_addr+ ":" + PORT)
         handshake_stub = energy_chain_pb2_grpc.NodeServiceStub(channel)
         handshake_response = handshake_stub.GetPeers(energy_chain_pb2.GetPeersRequest(nVersion=1, nTime=time.time(), addrMe=self.address, bestHeight=0))
         
         self.known_peers.append(contact_node_addr)
-        print(f"Successful handshake {self.address} to {contact_node_addr}")
 
         # Gossip approach - contact node's known peers
         if len(handshake_response.peer_addresses) == 0:
-            print(f"No more peers to discover")
             self.discovery(None)
         else:
-            print(f"Exploring peers: {handshake_response.peer_addresses}")
             for peer_addr in handshake_response.peer_addresses:
                 if peer_addr != self.address and (not peer_addr in self.known_peers):
                     self.discovery(peer_addr)
@@ -98,13 +109,11 @@ class Node():
         Function to listen for new nodes joining the network. Upon a GetPeersRequest (contact by new node), 
         adds new node to list of known peers and sends response of list of known peers. 
         """
-        print(f"Launching node server for {self.address}")
-        listener = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        energy_chain_pb2_grpc.add_NodeServiceServicer_to_server(NodeService(self), listener)
-        listener.add_insecure_port(f"{self.address}:{PORT}")
-        listener.start()
-        print("Node server started, listening on " + f"{self.address}:{PORT}")
-        listener.wait_for_termination(timeout=DISCOVERY_TIMEOUT_SECS)
+        self.listener = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        energy_chain_pb2_grpc.add_NodeServiceServicer_to_server(NodeService(self), self.listener)
+        self.listener.add_insecure_port(f"0.0.0.0:{PORT}")
+        self.listener.start()
+        time.sleep(DISCOVERY_TIMEOUT_SECS)
 
     # TODO: will be deleted once CLI working
     def generate_mock_tx(self, priv_key, pub_key, push_rate, pull_rate):
@@ -123,7 +132,8 @@ class Node():
 
     def discover_txns(self):
         """For now generates a bunch of transactions and adds to mempool."""
-        priv, pub = generate_key()
+        wallet = Wallet.generate()
+        priv, pub = wallet.private_key_hex, wallet.public_key_hex
 
         # Generate a lot of initial transactions
         for _ in range(100):
@@ -131,17 +141,18 @@ class Node():
             self.mempool.put(txn)
 
         while True:
-            try: 
+            try:
                 txn = self.generate_mock_tx(priv, pub, 5, 12)
                 self.mempool.put(txn)
-                time.sleep(random.randint(2,5))
+                time.sleep(random.randint(5,10))
             except KeyboardInterrupt:
                 print("Shutting down transaction discovery upon keyboard interrupt")
                 return
 
     def mine_loop(self):
         # Sleep initially to allow initial transactions to accumulate
-        time.sleep(5)
+        # and more importantly, to allow docker DNS to populate and node listeners to bind
+        time.sleep(15)
 
         while True:
             try:
@@ -154,14 +165,25 @@ class Node():
                         txns_to_mine.append(self.mempool.get())
 
                     # Attempt to mine block
+                    self.mining_interrupt.clear()
                     tip = self.blockchain.get_tip()
-                    mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY)
+                    mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY, stop_event=self.mining_interrupt)
                     if mined_block:
                         success = self.blockchain.add_block(mined_block)
                         print(f"Block {mined_block.header.height} Appended: {success}")
-                        print(
-                            f"Block {mined_block.header.height} Hash: {mined_block.header.hash_prev_block} (prev) -> Merkle: {mined_block.header.hash_merkle_root}"
-                        )
+                        if success:
+                            # mark as seen and broadcast
+                            block_hash = calculate_header_hash(mined_block.header)
+                            self.seen_blocks.add(block_hash)
+                            
+                            print(f"[IP: {self.address}] [Block Mined] Block Hash: {block_hash}")
+                            
+                            # remove transactions from mempool that are now mined
+                            # (not strictly necessary with our mock generate, but good practice)
+                            
+                            # broadcast to network
+                            thread = threading.Thread(target=self.broadcast_block, args=(mined_block,))
+                            thread.start()
                     else:
                         print("Failed to mine Block")
                         return
@@ -174,12 +196,38 @@ class Node():
             # Upon finishing, sleep for random amount of time to avoid conflicts
             time.sleep(random.randint(3,5))
 
+    def broadcast_transaction(self, tx_proto):
+        print(f"[IP: {self.address}] [Broadcast] New Transaction Hash: {tx_proto.transaction_hash}")
+        for peer in self.known_peers:
+            if peer != self.address:
+                try:
+                    channel = grpc.insecure_channel(f"{peer}:{PORT}")
+                    stub = energy_chain_pb2_grpc.NodeServiceStub(channel)
+                    stub.SubmitTx(tx_proto)
+                except Exception as e:
+                    print(f"Failed to broadcast tx to {peer}: {e}", file=sys.stderr)
+
+    def broadcast_block(self, block_proto):
+        for peer in self.known_peers:
+            if peer != self.address:
+                try:
+                    channel = grpc.insecure_channel(f"{peer}:{PORT}")
+                    stub = energy_chain_pb2_grpc.NodeServiceStub(channel)
+                    stub.SubmitBlock(block_proto)
+                except Exception as e:
+                    print(f"Failed to broadcast block to {peer}: {e}", file=sys.stderr)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         raise Exception("Incorrect arguments")
 
     ip_add = sys.argv[1]
+    import socket
+    try:
+        ip_add = socket.gethostbyname(ip_add)
+    except Exception:
+        pass
+
     node = Node(ip_add) # Pass in address of docker container
     node.run()
         

@@ -1,16 +1,24 @@
 # test_basic.py
 
-from core.cryptography import generate_key, sign_tx, verify_tx_signature
-from core.trade import evaluate_order, create_trade_tx
+from core.cryptography import sign_tx, verify_tx_signature
+from core.wallet import Wallet
+from core.state import State
+from state.validation import validate_order_tx, ValidationContext
+from core.trade import create_trade_tx
 import proto.energy_chain_pb2 as pb2
 
 
 def test_basic():
     # setting up keypairs
     print("--- Setting Up Keypairs ---\n")
-    grid_priv, grid_pub = generate_key()
-    user_priv, user_pub = generate_key()
-    miner_priv, miner_pub = generate_key()
+    grid_wallet = Wallet.generate()
+    user_wallet = Wallet.generate()
+    miner_wallet = Wallet.generate()
+
+    grid_priv, grid_pub = grid_wallet.private_key_hex, grid_wallet.public_key_hex
+    user_priv, user_pub = user_wallet.private_key_hex, user_wallet.public_key_hex
+    miner_priv, miner_pub = miner_wallet.private_key_hex, miner_wallet.public_key_hex
+
     print(f"Grid PubKey: {grid_pub[:16]}...")
     print(f"User PubKey: {user_pub[:16]}...")
     print(f"Miner PubKey: {miner_pub[:16]}...")
@@ -56,11 +64,15 @@ def test_basic():
     print(f"Order tx: Selling {order.energy_wh} Wh. Limit: {order.limit_price}.")
     print(f"Order tx: Script: '{order.script}'")
 
-    # miner evaluates the order
-    current_height = 50
-    can_execute = evaluate_order(order, grid_rate, current_height)
+    # mock state to fulfill balance requirements
+    state = State()
+    state.get_account(user_pub).energy_wh = 1000
 
-    print(f"Miner: evaluate_order() result: {can_execute}")
+    ctx = ValidationContext(height=50, grid_rate=grid_rate)
+    
+    can_execute, reason = validate_order_tx(order_tx, ctx, state)
+
+    print(f"Miner: evaluate_order() result: {can_execute} {reason}")
 
     if can_execute:
         # miner is settling the trade

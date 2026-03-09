@@ -4,7 +4,7 @@ import grpc
 import net.config as net_config
 import proto.energy_chain_pb2 as pb2
 import proto.energy_chain_pb2_grpc as pb2_grpc
-from cli.wallet import Wallet
+from core.wallet import Wallet
 from core.block import calculate_tx_hash
 from core.cryptography import sign_tx
 

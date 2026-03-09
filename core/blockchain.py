@@ -2,6 +2,8 @@
 
 from core.block import create_new_block, calculate_header_hash
 from core.state import State, GRID_ADDRESS
+from core.miner import verify
+from state.execution import apply_block
 import proto.energy_chain_pb2 as pb2
 from typing import List
 
@@ -43,7 +45,17 @@ class Blockchain:
         if block.header.hash_prev_block != calculate_header_hash(tip.header):
             print("Block prev_hash does not match local tip hash.")
             return False
+            
+        if not verify(block.header):
+            print("Block proof of work is invalid.")
+            return False
+        
+        new_state, success, reason = apply_block(block, self.state)
+        if not success:
+            print(f"Block state execution failed: {reason}")
+            return False
 
+        self.state = new_state
         self.blocks.append(block)
         print(f"Appended Block Height {block.header.height} to Chain")
         return True

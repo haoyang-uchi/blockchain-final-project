@@ -1,6 +1,6 @@
 import proto.energy_chain_pb2 as pb2
 from core.state import State, GRID_ADDRESS
-from validation import ValidationContext, validate_grid_rate_tx, validate_order_tx, validate_trade_tx
+from state.validation import ValidationContext, validate_grid_rate_tx, validate_order_tx, validate_trade_tx
 from core.block import calculate_header_hash
 
 def apply_block(block, state):

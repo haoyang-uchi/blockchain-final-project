@@ -18,16 +18,18 @@ class Registrar(energy_chain_pb2_grpc.RegisterServicer):
         self.node_dict = {}
 
     def RegisterNode(self, request, context):
-        last_registered = self.last_registered
+        known_peers_list = list(self.node_dict.keys())
+        
         if not (request.addrMe in self.node_dict.keys()):
             self.last_registered = request.addrMe
             self.node_dict[request.addrMe] = {
                 "nVersion":request.nVersion,
                 "nTime":request.nTime,
             }
-            return energy_chain_pb2.RegistrationReply(success=True, last_registered=last_registered)
+            print(f"[Network] Request from: {request.addrMe}")
+            return energy_chain_pb2.RegistrationReply(success=True, last_registered=known_peers_list[-1] if known_peers_list else "")
         else: #TODO: case already registered - may change
-            return energy_chain_pb2.RegistrationReply(success=False, last_registered=last_registered)
+            return energy_chain_pb2.RegistrationReply(success=False, last_registered=known_peers_list[-1] if known_peers_list else "")
 
 def serve():
     port = PORT
@@ -35,7 +37,7 @@ def serve():
     energy_chain_pb2_grpc.add_RegisterServicer_to_server(Registrar(), server)
     server.add_insecure_port("[::]:" + port)
     server.start()
-    print("Server started, listening on " + port)
+    print(f"DNS_SEED server started, port: {port}")
     server.wait_for_termination()
 
 
