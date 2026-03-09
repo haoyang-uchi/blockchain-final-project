@@ -22,27 +22,27 @@ def run_cli(args):
     return result.stdout.strip()
 
 def main():
-    print("=== Blockchain Energy Trading Automation ===")
+    print("Automatic Test")
     
-    # 0. Check connection and wait for stability
-    print(f"[*] Connecting to node {NODE}...")
-    time.sleep(2) # Give Docker a moment
+    # check connection
+    print(f"Connecting to node {NODE}...")
+    time.sleep(2)
     status = run_cli(["status"])
     if "ERROR" in status:
-        print(f"[!] Could not connect. Is Docker running? (docker compose up -d)")
+        print(f"Could not connect. Is Docker running? (docker compose up -d)")
         return
-    print(f"[+] Connected. Chain Height: {status}")
+    print(f"Connected. Chain Height: {status}")
 
-    # 1. Init wallet
-    print("\n--- Step 1: Initializing New Wallet ---")
+    # create a wallet
+    print("\n--- Initializing New Wallet ---")
     out = run_cli(["init-wallet", "--wallet", WALLET])
     print(out)
     pub_key = out.split("Public key: ")[1].strip() if "Public key: " in out else "Unknown"
-    print(f"[*] Target Address: {pub_key[:16]}...")
+    print(f"Target Address: {pub_key[:16]}...")
 
-    # 2. Wait for faucet
-    print("\n--- Step 2: Waiting for Faucet Funding ---")
-    print("[*] Polling node for balance update...")
+    # wait for the faucet to allocate funds
+    print("\n--- Waiting for Faucet Funding ---")
+    print("Polling node for balance update...")
     
     retries = 25
     funded = False
@@ -56,33 +56,33 @@ def main():
         
         # Show what we see
         summary = balance_out.replace("\n", " | ")
-        print(f"[*] Still waiting... (Retries: {retries}) Current: {summary}")
+        print(f"Still waiting... (Retries: {retries}) Current: {summary}")
         time.sleep(5)
         retries -= 1
     
     if not funded:
         print("\n[TIMEOUT] Faucet grant not seen in time.")
-        print("[!] Nodes might still be mining. Check: docker compose logs -f node_a")
+        print("Nodes might still be mining. Check: docker compose logs -f node_a")
         return
 
-    # 3. Post Grid Quote
-    print("\n--- Step 3: Posting Grid Quote (as Grid) ---")
+    # posting the grid quote
+    print("\n--- Posting Grid Quote (as Grid) ---")
     print(run_cli(["post-quote", "--bid", "400", "--ask", "500", "--expiry", "1000", "--wallet", "grid_wallet.json"]))
     
-    # 4. Buy Energy
-    print("\n--- Step 4: Submitting Buy Order (Nonce 1) ---")
+    # buy energy test
+    print("\n--- Buy Order Test ---")
     buy_res = run_cli(["buy", "--energy-wh", "250", "--limit-price", "600", "--expiry", "50", "--nonce", "1", "--script", "1 1 EQ", "--wallet", WALLET])
     print(buy_res)
 
-    # 5. Final check
-    print("\n--- Step 5: Waiting for Trade Settlement ---")
+    # verify
+    print("\n--- Verify ---")
     for i in range(3):
-        print(f"[*] Mining... {15 - i*5}s left")
+        print(f"Mining... {15 - i*5}s left")
         time.sleep(5)
         
     print("\n=== Final Status ===")
     print(run_cli(["balance", "--wallet", WALLET]))
-    print("\nTesting Complete!")
+    print("\nTest Complete!")
 
 if __name__ == "__main__":
     main()
