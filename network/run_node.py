@@ -24,11 +24,10 @@ from core.block import calculate_tx_hash, calculate_header_hash
 from core.trade import create_trade_tx
 from state.validation import validate_order_tx, ValidationContext
 
-# load values from config
 PORT = "58333"
 DISCOVERY_TIMEOUT_SECS = 3
-# making the mining harder so that the network is more stable
-DIFFICULTY = 0x1e0fffff
+# increasing difficulty to reduce forks
+DIFFICULTY = 0x1f0fffff
 MAX_TXN_PER_BLOCK = 10 # TODO: maybe move this in blockchain class
 
 """Logical representation of the entire node. """
@@ -50,8 +49,9 @@ class Node():
         genesis_hash = calculate_header_hash(self.blockchain.get_tip().header)
         print(f"Genesis Block Hash: {genesis_hash}")
         
-        # Start the automatic faucet monitor
-        threading.Thread(target=self.auto_faucet_loop, daemon=True).start()
+        # Start the automatic faucet monitor (ONLY on node_a to avoid redundancy)
+        if "node_a" in sys.argv or self.address.endswith(".3"):
+            threading.Thread(target=self.auto_faucet_loop, daemon=True).start()
 
     def run(self):
         """
@@ -184,6 +184,7 @@ class Node():
 
                         # handle real trades
                         if active_grid_rate is None:
+                            print(f"[Miner] Skipping Trade {tx.transaction_hash[:16]}...: No active grid rate yet. Run 'post-quote' first!")
                             continue
                         
                         # validate against working state
@@ -201,8 +202,7 @@ class Node():
                             acc.nonce = ord.nonce
                         else:
                             # Order is invalid (bad nonce, bad price, etc.)
-                            # We could mine it as an OrderTx anyway just to burn the nonce, 
-                            # but it's cleaner to just drop it.
+                            print(f"[Miner] Skipping Order {tx.transaction_hash[:16]}...: Validation Failed - {reason}")
                             continue
 
                 # attempt to mine the block
@@ -309,6 +309,28 @@ class Node():
                     stub.SubmitBlock(block_proto)
                 except Exception as e:
                     print(f"Failed to broadcast block to {peer}: {e}", file=sys.stderr)
+
+    def sync_chain(self, peer_addr):
+        # fetch missing blocks from peer
+        print(f"[IP: {self.address}] [Sync] Starting fetch from {peer_addr}...")
+        try:
+            channel = grpc.insecure_channel(f"{peer_addr}:{PORT}")
+            stub = energy_chain_pb2_grpc.NodeServiceStub(channel)
+            
+            # ask for peer tip
+            peer_tip = stub.GetTip(energy_chain_pb2.GetTipRequest())
+            if peer_tip.header.height <= self.blockchain.get_tip().header.height:
+                return 
+                
+            # if they aren't longer, then get the full chain
+            request = energy_chain_pb2.GetBlocksRequest(start_height=0, end_height=peer_tip.header.height)
+            response = stub.GetBlocks(request)
+            
+            if self.blockchain.replace_chain(response.blocks):
+                # interrupt mining to switch to the new tip
+                self.mining_interrupt.set()
+        except Exception as e:
+            print(f"Sync failed from {peer_addr}: {e}", file=sys.stderr)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

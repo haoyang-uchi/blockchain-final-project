@@ -64,3 +64,44 @@ class Blockchain:
         if 0 <= height < len(self.blocks):
             return self.blocks[height]
         return None
+
+    # validates a chain and replaces the local one if it's invalid
+    def replace_chain(self, new_blocks: List[pb2.Block]) -> bool:
+        if len(new_blocks) <= len(self.blocks):
+            return False
+            
+        print(f"Trying chain replacement: local={len(self.blocks)}, remote={len(new_blocks)}")
+        
+        # start from a fresh state
+        temp_state = State()
+        temp_state.get_account(GRID_ADDRESS).energy_wh = 100_000_000_000
+        temp_state.get_account(GRID_ADDRESS).micro_coins = 1_000_000_000_000
+
+        # verify blocks from the genesis block
+        for i, block in enumerate(new_blocks):
+            if i == 0:
+                # genesis block check
+                if block.header.height != 0:
+                    return False
+                continue
+
+            # check height and previous hash
+            if block.header.height != i:
+                return False
+            if block.header.hash_prev_block != calculate_header_hash(new_blocks[i-1].header):
+                return False
+            
+            # check proof of work
+            if not verify(block.header):
+                return False
+                
+            new_state, success, reason = apply_block(block, temp_state)
+            if not success:
+                print(f"Reorg failed at height {i}: {reason}")
+                return False
+            temp_state = new_state
+            
+        self.blocks = list(new_blocks)
+        self.state = temp_state
+        print(f"Chain Replaced! New height: {len(self.blocks) - 1}")
+        return True

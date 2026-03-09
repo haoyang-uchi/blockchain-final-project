@@ -52,6 +52,14 @@ class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
                 current_tip = self.host_node.blockchain.get_tip()
                 if request.header.height > current_tip.header.height:
                     print(f"[IP: {self.host_node.address}] [Consensus] Block Height {request.header.height} > Tip Height {current_tip.header.height}. Need sync.")
+                    # try to sync from the peer that send the block
+                    if ":" in context.peer():
+                        peer_ip = context.peer().split(":")[1].strip()
+                    else:
+                        peer_ip = None
+
+                    if peer_ip:
+                         threading.Thread(target=self.host_node.sync_chain, args=(peer_ip,)).start()
                 pass
                 
         return energy_chain_pb2.SubmitResponse(success=True, message="Block received")
@@ -59,6 +67,16 @@ class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
     def GetTip(self, request, context):
         tip_block = self.host_node.blockchain.get_tip()
         return tip_block
+
+    def GetBlocks(self, request, context):
+        blocks = []
+        for height in range(request.start_height, request.end_height + 1):
+            block = self.host_node.blockchain.get_block_by_height(height)
+            if block:
+                blocks.append(b)
+            else:
+                break
+        return energy_chain_pb2.GetBlocksResponse(blocks=blocks)
     
     def GetAccount(self, request, context):
         account = self.host_node.blockchain.state.get_account(request.address)

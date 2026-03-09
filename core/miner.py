@@ -24,7 +24,7 @@ def verify(header: pb2.Header) -> bool:
 
 
 # mine a block
-def mine_block(header: pb2.Header, max_nonce: int = 10_000_000, stop_event=None) -> bool:
+def mine_block(header: pb2.Header, max_nonce: int = 100_000_000, stop_event=None) -> bool:
     # get the target
     target_val = calculate_target(header.bits)
     start_time = time.time()
