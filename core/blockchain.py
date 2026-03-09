@@ -2,6 +2,8 @@
 
 from core.block import create_new_block, calculate_header_hash
 from core.state import State, GRID_ADDRESS
+from core.miner import verify
+from state.execution import apply_block
 import proto.energy_chain_pb2 as pb2
 from typing import List
 
@@ -18,15 +20,7 @@ class Blockchain:
         # giving the grid 100 GWh (which is a lot)
         self.state.get_account(GRID_ADDRESS).energy_wh = 100_000_000_000
         # giving 1 trillion microcoins
-        self.state.get_account(GRID_ADDRESS).coins_micro = 1_000_000_000_000
-
-        # testing accounts
-        # **REMOVE LATER**
-        test_user_a = "userA"
-        self.state.update_account(test_user_a, energy_delta=5000, coins_delta=100_000)
-
-        test_user_b = "userB"
-        self.state.update_account(test_user_b, energy_delta=0, coins_delta=5_000_000)
+        self.state.get_account(GRID_ADDRESS).micro_coins = 1_000_000_000_000
 
         self.blocks.append(genesis)
         print("Created Genesis Block")
@@ -34,6 +28,9 @@ class Blockchain:
     # adds a block to the chain
     def add_block(self, block: pb2.Block) -> bool:
         tip = self.get_tip()
+        if block.header.height <= tip.header.height:
+            return False
+            
         if block.header.height != tip.header.height + 1:
             print(
                 f"Block height {block.header.height} invalid. Expected {tip.header.height + 1}"
@@ -43,7 +40,17 @@ class Blockchain:
         if block.header.hash_prev_block != calculate_header_hash(tip.header):
             print("Block prev_hash does not match local tip hash.")
             return False
+            
+        if not verify(block.header):
+            print("Block proof of work is invalid.")
+            return False
+        
+        new_state, success, reason = apply_block(block, self.state)
+        if not success:
+            print(f"Block state execution failed: {reason}")
+            return False
 
+        self.state = new_state
         self.blocks.append(block)
         print(f"Appended Block Height {block.header.height} to Chain")
         return True

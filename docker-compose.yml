@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  dns_seed:
+    build:
+      context: .
+      dockerfile: Dockerfile.registrar
+    container_name: dns_seed
+    ports:
+      - "58333:58333"
+
+  node_a:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    command: ["python", "-u", "-m", "network.run_node", "node_a"]
+    container_name: node_a
+    ports:
+      - "58334:58333"
+    depends_on:
+      - dns_seed
+    volumes:
+      - .:/app
+    links:
+      - dns_seed:dns_seed
+
+  node_b:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    command: ["python", "-u", "-m", "network.run_node", "node_b"]
+    container_name: node_b
+    depends_on:
+      - dns_seed
+      - node_a
+    volumes:
+      - .:/app
+    links:
+      - dns_seed:dns_seed
+
+  node_c:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    command: ["python", "-u", "-m", "network.run_node", "node_c"]
+    container_name: node_c
+    depends_on:
+      - dns_seed
+      - node_b
+    volumes:
+      - .:/app
+    links:
+      - dns_seed:dns_seed

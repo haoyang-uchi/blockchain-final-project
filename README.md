@@ -9,10 +9,19 @@
 | Haoyang Li | haoyangl | haoyang-uchi |
 | Kevin Dougherty | kdough01 | kdough01 |
 
-## Tests
+
+## General Transaction Test/Setup
+1. In terminal 1 start the docker container
 ```bash
-python3 -m tests.test_basic
-python3 -m tests.test_multiblock
+docker compose up --build
+```
+2. In terminal 2, run the test script
+```bash
+python3 scripts/automate_test.py
+```
+3. Once it completes, then in terminal 1 shutdown docker
+```bash
+docker compose down
 ```
 
 ## Networking
@@ -22,7 +31,7 @@ pip3 install -r requirements.txt
 Testing the docker (all in -it interactive mode to verify it works):
 1. Build image
 ```bash
-cd ./net/test_launch_docker
+cd ./network/test_launch_docker
 bash build.sh
 ```
 2. Launch registrar + run registrar server
@@ -30,7 +39,7 @@ bash build.sh
 bash launch_registrar.sh
 // In Docker container shell:
 cd shared
-python3 -m net.run_registrar.py
+python3 -m network.run_registrar
 ```
 3. For every regular node you want to spawn, open a new terminal window and execute the following:
 ```bash
@@ -38,7 +47,7 @@ bash launch_node.sh <unique container name>
 // In Docker container shell:
 cd shared
 hostname -I (note the output)
-python3 -m net.run_node (output from before - i.e. 172.17.0.3)
+python3 -m network.run_node (output from before - i.e. 172.17.0.3)
 ```
 
 All containers will automatically be removed when you exit interactive mode.

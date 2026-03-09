@@ -1,21 +1,27 @@
 import argparse
-import grpc
+import os
+import sys
 
-import net.config as net_config
+# Add project root to sys.path
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root)
+
+import grpc
 import proto.energy_chain_pb2 as pb2
 import proto.energy_chain_pb2_grpc as pb2_grpc
-from cli.wallet import Wallet
+from core.wallet import Wallet
 from core.block import calculate_tx_hash
 from core.cryptography import sign_tx
 
 
 DEFAULT_WALLET_PATH = "wallet.json"
+PORT = "58333"
 
 
 def _normalize_node_target(node: str) -> str:
     if ":" in node:
         return node
-    return f"{node}:{net_config.PORT}"
+    return f"{node}:{PORT}"
 
 
 def _submit_tx(node: str, tx: pb2.Transaction):
@@ -103,6 +109,30 @@ def cmd_sell(args):
         print(f"SubmitTx RPC failed: {e.code().name} {e.details()}")
 
 
+def cmd_faucet(args):
+    wallet = _load_wallet(args.wallet)
+
+    order = pb2.OrderTx()
+    order.sender_address = wallet.public_key_hex
+    order.type = pb2.PUSH
+    order.energy_wh = 1
+    order.limit_price = 1
+    order.nonce = 0
+    order.script = "FAUCET"
+
+    tx = pb2.Transaction()
+    tx.order_tx.CopyFrom(order)
+    sign_tx(tx, wallet.private_key_hex)
+    tx.transaction_hash = calculate_tx_hash(tx)
+
+    try:
+        response = _submit_tx(args.node, tx)
+        print(f"Faucet request submitted: success={response.success} message='{response.message}'")
+        print(f"tx_hash={tx.transaction_hash}")
+    except grpc.RpcError as e:
+        print(f"Faucet RPC failed: {e.code().name} {e.details()}")
+
+
 def cmd_status(args):
     try:
         tip = _get_tip(args.node)
@@ -112,6 +142,31 @@ def cmd_status(args):
         )
     except grpc.RpcError as e:
         print(f"GetTip RPC failed: {e.code().name} {e.details()}")
+
+
+def cmd_balance(args):
+    addr = args.address
+    if not addr and args.wallet:
+        wallet = _load_wallet(args.wallet)
+        addr = wallet.public_key_hex
+    
+    if not addr:
+        print("Error: must provide --address or --wallet")
+        return
+
+    target = _normalize_node_target(args.node)
+    channel = grpc.insecure_channel(target)
+    stub = pb2_grpc.NodeServiceStub(channel)
+
+    try:
+        req = pb2.GetAccountRequest(address=addr)
+        resp = stub.GetAccount(req)
+        print(f"Account: {resp.address[:16]}...")
+        print(f"  Coins:  {resp.micro_coins}")
+        print(f"  Energy: {resp.energy_wh}")
+        print(f"  Nonce:  {resp.nonce}")
+    except grpc.RpcError as e:
+        print(f"GetAccount RPC failed: {e.code().name} {e.details()}")
 
 
 def build_parser():
@@ -153,6 +208,17 @@ def build_parser():
     p_status = subparsers.add_parser("status")
     p_status.add_argument("--node", required=True)
     p_status.set_defaults(func=cmd_status)
+
+    p_faucet = subparsers.add_parser("faucet")
+    p_faucet.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_faucet.add_argument("--node", required=True)
+    p_faucet.set_defaults(func=cmd_faucet)
+
+    p_balance = subparsers.add_parser("balance")
+    p_balance.add_argument("--node", required=True)
+    p_balance.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_balance.add_argument("--address")
+    p_balance.set_defaults(func=cmd_balance)
 
     return parser
 

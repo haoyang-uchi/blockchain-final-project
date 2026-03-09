@@ -24,15 +24,15 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x65nergy_chain.proto\x12\x0c\x65nergy_chain\"2\n\x0eSubmitResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x0f\n\rGetTipRequest\"<\n\x10GetBlocksRequest\x12\x14\n\x0cstart_height\x18\x01 \x01(\x04\x12\x12\n\nend_height\x18\x02 \x01(\x04\"8\n\x11GetBlocksResponse\x12#\n\x06\x62locks\x18\x01 \x03(\x0b\x32\x13.energy_chain.Block\"V\n\x0fGetPeersRequest\x12\x10\n\x08nVersion\x18\x01 \x01(\x04\x12\r\n\x05nTime\x18\x02 \x01(\x02\x12\x0e\n\x06\x61\x64\x64rMe\x18\x03 \x01(\t\x12\x12\n\nbestHeight\x18\x04 \x01(\x04\"*\n\x10GetPeersResponse\x12\x16\n\x0epeer_addresses\x18\x01 \x03(\t\"F\n\x13RegistrationRequest\x12\x10\n\x08nVersion\x18\x01 \x01(\x04\x12\r\n\x05nTime\x18\x02 \x01(\x02\x12\x0e\n\x06\x61\x64\x64rMe\x18\x03 \x01(\t\"=\n\x11RegistrationReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x17\n\x0flast_registered\x18\x02 \x01(\t\"^\n\x05\x42lock\x12$\n\x06header\x18\x01 \x01(\x0b\x32\x14.energy_chain.Header\x12/\n\x0ctransactions\x18\x02 \x03(\x0b\x32\x19.energy_chain.Transaction\"\x8c\x01\n\x06Header\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\x17\n\x0fhash_prev_block\x18\x02 \x01(\t\x12\x18\n\x10hash_merkle_root\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x04 \x01(\x04\x12\x0c\n\x04\x62its\x18\x05 \x01(\r\x12\r\n\x05nonce\x18\x06 \x01(\r\x12\x0e\n\x06height\x18\x07 \x01(\x04\"\xba\x01\n\x0bTransaction\x12\x18\n\x10transaction_hash\x18\x01 \x01(\t\x12\x30\n\x0cgrid_rate_tx\x18\x02 \x01(\x0b\x32\x18.energy_chain.GridRateTxH\x00\x12)\n\x08order_tx\x18\x03 \x01(\x0b\x32\x15.energy_chain.OrderTxH\x00\x12)\n\x08trade_tx\x18\x04 \x01(\x0b\x32\x15.energy_chain.TradeTxH\x00\x42\t\n\x07payload\"r\n\nGridRateTx\x12\x11\n\tpush_rate\x18\x01 \x01(\x03\x12\x11\n\tpull_rate\x18\x02 \x01(\x03\x12\x15\n\rexpiry_height\x18\x03 \x01(\x04\x12\x14\n\x0cgrid_address\x18\x04 \x01(\t\x12\x11\n\tsignature\x18\x05 \x01(\x0c\"\xa2\x01\n\x07OrderTx\x12\x16\n\x0esender_address\x18\x01 \x01(\t\x12%\n\x04type\x18\x02 \x01(\x0e\x32\x17.energy_chain.OrderType\x12\x11\n\tenergy_wh\x18\x03 \x01(\x03\x12\x13\n\x0blimit_price\x18\x04 \x01(\x03\x12\r\n\x05nonce\x18\x05 \x01(\x04\x12\x0e\n\x06script\x18\x06 \x01(\t\x12\x11\n\tsignature\x18\x07 \x01(\x0c\"\xa1\x01\n\x07TradeTx\x12\x15\n\rminer_address\x18\x01 \x01(\t\x12$\n\x05order\x18\x02 \x01(\x0b\x32\x15.energy_chain.OrderTx\x12+\n\tgrid_rate\x18\x03 \x01(\x0b\x32\x18.energy_chain.GridRateTx\x12\x11\n\tminer_fee\x18\x04 \x01(\x03\x12\x19\n\x11settlement_amount\x18\x05 \x01(\x03*\x1f\n\tOrderType\x12\x08\n\x04PUSH\x10\x00\x12\x08\n\x04PULL\x10\x01\x32\xe9\x02\n\x0bNodeService\x12\x43\n\x08SubmitTx\x12\x19.energy_chain.Transaction\x1a\x1c.energy_chain.SubmitResponse\x12@\n\x0bSubmitBlock\x12\x13.energy_chain.Block\x1a\x1c.energy_chain.SubmitResponse\x12:\n\x06GetTip\x12\x1b.energy_chain.GetTipRequest\x1a\x13.energy_chain.Block\x12L\n\tGetBlocks\x12\x1e.energy_chain.GetBlocksRequest\x1a\x1f.energy_chain.GetBlocksResponse\x12I\n\x08GetPeers\x12\x1d.energy_chain.GetPeersRequest\x1a\x1e.energy_chain.GetPeersResponse2^\n\x08Register\x12R\n\x0cRegisterNode\x12!.energy_chain.RegistrationRequest\x1a\x1f.energy_chain.RegistrationReplyb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x65nergy_chain.proto\x12\x0c\x65nergy_chain\"2\n\x0eSubmitResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x0f\n\rGetTipRequest\"<\n\x10GetBlocksRequest\x12\x14\n\x0cstart_height\x18\x01 \x01(\x04\x12\x12\n\nend_height\x18\x02 \x01(\x04\"8\n\x11GetBlocksResponse\x12#\n\x06\x62locks\x18\x01 \x03(\x0b\x32\x13.energy_chain.Block\"V\n\x0fGetPeersRequest\x12\x10\n\x08nVersion\x18\x01 \x01(\x04\x12\r\n\x05nTime\x18\x02 \x01(\x02\x12\x0e\n\x06\x61\x64\x64rMe\x18\x03 \x01(\t\x12\x12\n\nbestHeight\x18\x04 \x01(\x04\"*\n\x10GetPeersResponse\x12\x16\n\x0epeer_addresses\x18\x01 \x03(\t\"F\n\x13RegistrationRequest\x12\x10\n\x08nVersion\x18\x01 \x01(\x04\x12\r\n\x05nTime\x18\x02 \x01(\x02\x12\x0e\n\x06\x61\x64\x64rMe\x18\x03 \x01(\t\"=\n\x11RegistrationReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x17\n\x0flast_registered\x18\x02 \x01(\t\"$\n\x11GetAccountRequest\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\t\"Y\n\x0f\x41\x63\x63ountResponse\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\t\x12\x11\n\tenergy_wh\x18\x02 \x01(\x03\x12\x13\n\x0bmicro_coins\x18\x03 \x01(\x03\x12\r\n\x05nonce\x18\x04 \x01(\x04\"^\n\x05\x42lock\x12$\n\x06header\x18\x01 \x01(\x0b\x32\x14.energy_chain.Header\x12/\n\x0ctransactions\x18\x02 \x03(\x0b\x32\x19.energy_chain.Transaction\"\x8c\x01\n\x06Header\x12\x0f\n\x07version\x18\x01 \x01(\r\x12\x17\n\x0fhash_prev_block\x18\x02 \x01(\t\x12\x18\n\x10hash_merkle_root\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x04 \x01(\x04\x12\x0c\n\x04\x62its\x18\x05 \x01(\r\x12\r\n\x05nonce\x18\x06 \x01(\r\x12\x0e\n\x06height\x18\x07 \x01(\x04\"\xba\x01\n\x0bTransaction\x12\x18\n\x10transaction_hash\x18\x01 \x01(\t\x12\x30\n\x0cgrid_rate_tx\x18\x02 \x01(\x0b\x32\x18.energy_chain.GridRateTxH\x00\x12)\n\x08order_tx\x18\x03 \x01(\x0b\x32\x15.energy_chain.OrderTxH\x00\x12)\n\x08trade_tx\x18\x04 \x01(\x0b\x32\x15.energy_chain.TradeTxH\x00\x42\t\n\x07payload\"r\n\nGridRateTx\x12\x11\n\tpush_rate\x18\x01 \x01(\x03\x12\x11\n\tpull_rate\x18\x02 \x01(\x03\x12\x15\n\rexpiry_height\x18\x03 \x01(\x04\x12\x14\n\x0cgrid_address\x18\x04 \x01(\t\x12\x11\n\tsignature\x18\x05 \x01(\x0c\"\xa2\x01\n\x07OrderTx\x12\x16\n\x0esender_address\x18\x01 \x01(\t\x12%\n\x04type\x18\x02 \x01(\x0e\x32\x17.energy_chain.OrderType\x12\x11\n\tenergy_wh\x18\x03 \x01(\x03\x12\x13\n\x0blimit_price\x18\x04 \x01(\x03\x12\r\n\x05nonce\x18\x05 \x01(\x04\x12\x0e\n\x06script\x18\x06 \x01(\t\x12\x11\n\tsignature\x18\x07 \x01(\x0c\"\xa1\x01\n\x07TradeTx\x12\x15\n\rminer_address\x18\x01 \x01(\t\x12$\n\x05order\x18\x02 \x01(\x0b\x32\x15.energy_chain.OrderTx\x12+\n\tgrid_rate\x18\x03 \x01(\x0b\x32\x18.energy_chain.GridRateTx\x12\x11\n\tminer_fee\x18\x04 \x01(\x03\x12\x19\n\x11settlement_amount\x18\x05 \x01(\x03*\x1f\n\tOrderType\x12\x08\n\x04PUSH\x10\x00\x12\x08\n\x04PULL\x10\x01\x32\xb7\x03\n\x0bNodeService\x12\x43\n\x08SubmitTx\x12\x19.energy_chain.Transaction\x1a\x1c.energy_chain.SubmitResponse\x12@\n\x0bSubmitBlock\x12\x13.energy_chain.Block\x1a\x1c.energy_chain.SubmitResponse\x12:\n\x06GetTip\x12\x1b.energy_chain.GetTipRequest\x1a\x13.energy_chain.Block\x12L\n\tGetBlocks\x12\x1e.energy_chain.GetBlocksRequest\x1a\x1f.energy_chain.GetBlocksResponse\x12I\n\x08GetPeers\x12\x1d.energy_chain.GetPeersRequest\x1a\x1e.energy_chain.GetPeersResponse\x12L\n\nGetAccount\x12\x1f.energy_chain.GetAccountRequest\x1a\x1d.energy_chain.AccountResponse2^\n\x08Register\x12R\n\x0cRegisterNode\x12!.energy_chain.RegistrationRequest\x1a\x1f.energy_chain.RegistrationReplyb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'energy_chain_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_ORDERTYPE']._serialized_start=1365
-  _globals['_ORDERTYPE']._serialized_end=1396
+  _globals['_ORDERTYPE']._serialized_start=1494
+  _globals['_ORDERTYPE']._serialized_end=1525
   _globals['_SUBMITRESPONSE']._serialized_start=36
   _globals['_SUBMITRESPONSE']._serialized_end=86
   _globals['_GETTIPREQUEST']._serialized_start=88
@@ -49,20 +49,24 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_REGISTRATIONREQUEST']._serialized_end=427
   _globals['_REGISTRATIONREPLY']._serialized_start=429
   _globals['_REGISTRATIONREPLY']._serialized_end=490
-  _globals['_BLOCK']._serialized_start=492
-  _globals['_BLOCK']._serialized_end=586
-  _globals['_HEADER']._serialized_start=589
-  _globals['_HEADER']._serialized_end=729
-  _globals['_TRANSACTION']._serialized_start=732
-  _globals['_TRANSACTION']._serialized_end=918
-  _globals['_GRIDRATETX']._serialized_start=920
-  _globals['_GRIDRATETX']._serialized_end=1034
-  _globals['_ORDERTX']._serialized_start=1037
-  _globals['_ORDERTX']._serialized_end=1199
-  _globals['_TRADETX']._serialized_start=1202
-  _globals['_TRADETX']._serialized_end=1363
-  _globals['_NODESERVICE']._serialized_start=1399
-  _globals['_NODESERVICE']._serialized_end=1760
-  _globals['_REGISTER']._serialized_start=1762
-  _globals['_REGISTER']._serialized_end=1856
+  _globals['_GETACCOUNTREQUEST']._serialized_start=492
+  _globals['_GETACCOUNTREQUEST']._serialized_end=528
+  _globals['_ACCOUNTRESPONSE']._serialized_start=530
+  _globals['_ACCOUNTRESPONSE']._serialized_end=619
+  _globals['_BLOCK']._serialized_start=621
+  _globals['_BLOCK']._serialized_end=715
+  _globals['_HEADER']._serialized_start=718
+  _globals['_HEADER']._serialized_end=858
+  _globals['_TRANSACTION']._serialized_start=861
+  _globals['_TRANSACTION']._serialized_end=1047
+  _globals['_GRIDRATETX']._serialized_start=1049
+  _globals['_GRIDRATETX']._serialized_end=1163
+  _globals['_ORDERTX']._serialized_start=1166
+  _globals['_ORDERTX']._serialized_end=1328
+  _globals['_TRADETX']._serialized_start=1331
+  _globals['_TRADETX']._serialized_end=1492
+  _globals['_NODESERVICE']._serialized_start=1528
+  _globals['_NODESERVICE']._serialized_end=1967
+  _globals['_REGISTER']._serialized_start=1969
+  _globals['_REGISTER']._serialized_end=2063
 # @@protoc_insertion_point(module_scope)

@@ -25,6 +25,9 @@ service NodeService {
 
   /* Node discovery */
   rpc GetPeers(GetPeersRequest) returns (GetPeersResponse);
+
+  /* Get account details (balance, nonce) */
+  rpc GetAccount(GetAccountRequest) returns (AccountResponse);
 }
 
 service Register {
@@ -82,6 +85,19 @@ message RegistrationRequest {
 message RegistrationReply {
   bool success = 1;
   string last_registered = 2;
+}
+
+/* GetAccountRequest */
+message GetAccountRequest {
+  string address = 1;
+}
+
+/* AccountResponse */
+message AccountResponse {
+  string address = 1;
+  int64 energy_wh = 2;
+  int64 micro_coins = 3;
+  uint64 nonce = 4;
 }
 
 /**

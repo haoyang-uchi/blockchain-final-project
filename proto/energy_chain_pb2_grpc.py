@@ -62,6 +62,11 @@ class NodeServiceStub(object):
                 request_serializer=energy__chain__pb2.GetPeersRequest.SerializeToString,
                 response_deserializer=energy__chain__pb2.GetPeersResponse.FromString,
                 _registered_method=True)
+        self.GetAccount = channel.unary_unary(
+                '/energy_chain.NodeService/GetAccount',
+                request_serializer=energy__chain__pb2.GetAccountRequest.SerializeToString,
+                response_deserializer=energy__chain__pb2.AccountResponse.FromString,
+                _registered_method=True)
 
 
 class NodeServiceServicer(object):
@@ -105,6 +110,13 @@ class NodeServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAccount(self, request, context):
+        """Get account details (balance, nonce) 
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NodeServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -132,6 +144,11 @@ def add_NodeServiceServicer_to_server(servicer, server):
                     servicer.GetPeers,
                     request_deserializer=energy__chain__pb2.GetPeersRequest.FromString,
                     response_serializer=energy__chain__pb2.GetPeersResponse.SerializeToString,
+            ),
+            'GetAccount': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAccount,
+                    request_deserializer=energy__chain__pb2.GetAccountRequest.FromString,
+                    response_serializer=energy__chain__pb2.AccountResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -272,6 +289,33 @@ class NodeService(object):
             '/energy_chain.NodeService/GetPeers',
             energy__chain__pb2.GetPeersRequest.SerializeToString,
             energy__chain__pb2.GetPeersResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAccount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/energy_chain.NodeService/GetAccount',
+            energy__chain__pb2.GetAccountRequest.SerializeToString,
+            energy__chain__pb2.AccountResponse.FromString,
             options,
             channel_credentials,
             insecure,

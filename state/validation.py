@@ -2,6 +2,7 @@
 
 from core.state import State, GRID_ADDRESS
 from core.cryptography import verify_tx_signature
+from scripting.script_engine import ScriptEngine
 import proto.energy_chain_pb2 as pb2
 
 """
@@ -23,6 +24,16 @@ def validate_order_tx(tx, ctx, state):
     if not verify_tx_signature(tx):
         return False, "OrderTx invalid signature"
     
+    account = state.get_account(order.sender_address)
+
+    # bypass checks for new wallets
+    if order.script == "FAUCET":
+        if order.nonce != 0:
+            return False, "FAUCET request only allowed with nonce 0"
+        if account.micro_coins > 0 or account.energy_wh > 0 or account.nonce > 0:
+            return False, "FAUCET only allowed for new, empty accounts"
+        return True, ""
+    
     if ctx.grid_rate is None:
         return False, "OrderTx no active GridRateTx, cannot evaluate order"
     
@@ -37,7 +48,6 @@ def validate_order_tx(tx, ctx, state):
     if order.limit_price <= 0:
         return False, f"OrderTx limit_price must be positive, got {order.limit_price}"
     
-    account = state.get_account(order.sender_address)
     expected_nonce = account.nonce + 1
     if order.nonce != expected_nonce:
         return False, f"OrderTx bad nonce for {order.sender_address[:16]}, expected {expected_nonce}, got {order.nonce}"
@@ -52,6 +62,15 @@ def validate_order_tx(tx, ctx, state):
     
     else:
         return False, f"OrderTx unknown order type {order.type}"
+    
+    context = {
+        "height": ctx.height,
+        "push_rate": gr.push_rate,
+        "pull_rate": gr.pull_rate,
+    }
+    engine = ScriptEngine(order.script, context)
+    if not engine.execute():
+        return False, "OrderTx script execution failed"
     
     if order.type == pb2.PUSH:
         if account.energy_wh < order.energy_wh:

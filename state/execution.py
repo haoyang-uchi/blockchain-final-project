@@ -1,6 +1,6 @@
 import proto.energy_chain_pb2 as pb2
 from core.state import State, GRID_ADDRESS
-from validation import ValidationContext, validate_grid_rate_tx, validate_order_tx, validate_trade_tx
+from state.validation import ValidationContext, validate_grid_rate_tx, validate_order_tx, validate_trade_tx
 from core.block import calculate_header_hash
 
 def apply_block(block, state):
@@ -10,8 +10,7 @@ def apply_block(block, state):
     working = state.copy()
     height = block.header.height
 
-    active_grid_rate = find_current_grid_rate(working, block)
-    ctx = ValidationContext(height=height, grid_rate=active_grid_rate)
+    ctx = ValidationContext(height=height, grid_rate=working.active_grid_rate)
 
     grid_rate_txs = []
     order_txs = []
@@ -33,13 +32,33 @@ def apply_block(block, state):
         if not ok:
             return state, False, f"GridRateTx invalid: {reason}"
         ctx = ValidationContext(height=height, grid_rate=tx.grid_rate_tx)
+        working.active_grid_rate = tx.grid_rate_tx
 
     for tx in order_txs:
         ok, reason = validate_order_tx(tx, ctx, working)
         if not ok:
             return state, False, f"OrderTx invalid: {reason}"
-        account = working.get_account(tx.order_tx.sender_address)
-        account.nonce = tx.order_tx.nonce
+        
+        ord = tx.order_tx
+        account = working.get_account(ord.sender_address)
+        
+        # incremenet for a real trade but not for faucet
+        if ord.script != "FAUCET":
+            account.nonce = ord.nonce
+
+        # faucet: give funds from the grid to a new user
+        if ord.script == "FAUCET":
+            grid = working.get_account(GRID_ADDRESS)
+            grant_coins = 5_000_000
+            grant_energy = 5_000
+            
+            # transfer
+            grid.micro_coins -= grant_coins
+            grid.energy_wh -= grant_energy
+            account.micro_coins += grant_coins
+            account.energy_wh += grant_energy
+            
+            print(f"Faucet: granted {grant_coins} coins and {grant_energy} Wh to {ord.sender_address[:16]}...")
 
     for tx in trade_txs:
         ok, reason = validate_trade_tx(tx, ctx, working)
@@ -57,10 +76,7 @@ def apply_block(block, state):
             push=is_push,
             fee=trade.miner_fee,
             miner_address=trade.miner_address,
+            nonce=order.nonce,
         )
 
     return working, True, ""
-
-
-def find_current_grid_rate(state: State, block: pb2.Block):
-    return None

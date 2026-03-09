@@ -3,10 +3,9 @@
 core/__pycache__
 proto/__pycache__
 scripting/__pycache__
-tests/__pycache__
-net/__pycache__
+network/__pycache__
+cli/__pycache__
 .vscode
 venv*
-cli/__pycache__
 testing_ground/__pycache__
 testing_ground/wallet.json
