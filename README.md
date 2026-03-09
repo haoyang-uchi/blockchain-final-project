@@ -9,10 +9,19 @@
 | Haoyang Li | haoyangl | haoyang-uchi |
 | Kevin Dougherty | kdough01 | kdough01 |
 
-## Tests
+
+## General Transaction Test/Setup
+1. In terminal 1 start the docker container
 ```bash
-python3 -m tests.test_basic
-python3 -m tests.test_multiblock
+docker compose up --build
+```
+2. In terminal 2, run the test script
+```bash
+python3 scripts/automate_test.py
+```
+3. Once it completes, then in terminal 1 shutdown docker
+```bash
+docker compose down
 ```
 
 ## Networking

@@ -36,6 +36,7 @@ class State:
         push: bool,
         fee: int,
         miner_address: str,
+        nonce: int = None,
     ):
         user = self.get_account(user_address)
         grid = self.get_account(GRID_ADDRESS)
@@ -54,6 +55,9 @@ class State:
             grid.micro_coins += settlement_amount
 
         miner.micro_coins += fee
+        
+        if nonce is not None:
+            user.nonce = nonce
 
     def copy(self):
         new_state = State()

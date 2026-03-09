@@ -24,7 +24,9 @@ def validate_order_tx(tx, ctx, state):
     if not verify_tx_signature(tx):
         return False, "OrderTx invalid signature"
     
-    # Simulation Faucet: bypass checks for new wallets requesting initial funds
+    account = state.get_account(order.sender_address)
+
+    # bypass checks for new wallets
     if order.script == "FAUCET":
         if order.nonce != 0:
             return False, "FAUCET request only allowed with nonce 0"
@@ -46,7 +48,6 @@ def validate_order_tx(tx, ctx, state):
     if order.limit_price <= 0:
         return False, f"OrderTx limit_price must be positive, got {order.limit_price}"
     
-    account = state.get_account(order.sender_address)
     expected_nonce = account.nonce + 1
     if order.nonce != expected_nonce:
         return False, f"OrderTx bad nonce for {order.sender_address[:16]}, expected {expected_nonce}, got {order.nonce}"

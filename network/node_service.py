@@ -8,7 +8,7 @@ import threading
 
 class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
     def __init__(self, host_node):
-        self.host_node = host_node # Node python object belonging to node providing service
+        self.host_node = host_node
 
     def GetPeers(self, request, context):
         print(f"[IP: {self.host_node.address}] [Handshake Received] From: {request.addrMe}, Height: {request.bestHeight}")
@@ -49,13 +49,17 @@ class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
                 thread = threading.Thread(target=self.host_node.broadcast_block, args=(request,))
                 thread.start()
             else:
-                print(f"[IP: {self.host_node.address}] [Broadcast Rejected] Block Height {request.header.height} Invalid")
+                current_tip = self.host_node.blockchain.get_tip()
+                if request.header.height > current_tip.header.height:
+                    print(f"[IP: {self.host_node.address}] [Consensus] Block Height {request.header.height} > Tip Height {current_tip.header.height}. Need sync.")
+                pass
                 
         return energy_chain_pb2.SubmitResponse(success=True, message="Block received")
 
     def GetTip(self, request, context):
         tip_block = self.host_node.blockchain.get_tip()
         return tip_block
+    
     def GetAccount(self, request, context):
         account = self.host_node.blockchain.state.get_account(request.address)
         return energy_chain_pb2.AccountResponse(

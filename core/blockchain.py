@@ -28,6 +28,9 @@ class Blockchain:
     # adds a block to the chain
     def add_block(self, block: pb2.Block) -> bool:
         tip = self.get_tip()
+        if block.header.height <= tip.header.height:
+            return False
+            
         if block.header.height != tip.header.height + 1:
             print(
                 f"Block height {block.header.height} invalid. Expected {tip.header.height + 1}"

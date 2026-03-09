@@ -1,7 +1,12 @@
 import argparse
-import grpc
+import os
+import sys
 
-import network.config as net_config
+# Add project root to sys.path
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root)
+
+import grpc
 import proto.energy_chain_pb2 as pb2
 import proto.energy_chain_pb2_grpc as pb2_grpc
 from core.wallet import Wallet
@@ -10,12 +15,13 @@ from core.cryptography import sign_tx
 
 
 DEFAULT_WALLET_PATH = "wallet.json"
+PORT = "58333"
 
 
 def _normalize_node_target(node: str) -> str:
     if ":" in node:
         return node
-    return f"{node}:{net_config.PORT}"
+    return f"{node}:{PORT}"
 
 
 def _submit_tx(node: str, tx: pb2.Transaction):

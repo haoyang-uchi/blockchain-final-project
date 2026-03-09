@@ -1,14 +1,18 @@
 import os
-import json
+import sys
+
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root)
+
 import grpc
 import time
+import json
 import sys
 from concurrent import futures
 import queue
 import random
 import threading
 from network.node_service import NodeService
-import network.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 from core.blockchain import Blockchain
@@ -17,12 +21,15 @@ from core.miner import construct_and_mine_block
 from core.wallet import Wallet
 from core.cryptography import sign_tx
 from core.block import calculate_tx_hash, calculate_header_hash
+from core.trade import create_trade_tx
+from state.validation import validate_order_tx, ValidationContext
 
-# Load values from config
-PORT = config.PORT
-DISCOVERY_TIMEOUT_SECS = config.DISCOVERY_TIMEOUT_SECS
-DIFFICULTY = config.MINING_DIFFICULTY
-MAX_TXN_PER_BLOCK = config.MAX_TXN_PER_BLOCK # TODO: maybe move this in blockchain class
+# load values from config
+PORT = "58333"
+DISCOVERY_TIMEOUT_SECS = 3
+# making the mining harder so that the network is more stable
+MINING_DIFFICULTY = 0x1e0fffff
+MAX_TXN_PER_BLOCK = 10 # TODO: maybe move this in blockchain class
 
 """Logical representation of the entire node. """
 class Node():
@@ -99,7 +106,7 @@ class Node():
         
         self.known_peers.append(contact_node_addr)
 
-        # Gossip approach - contact node's known peers
+        # gossip
         if len(handshake_response.peer_addresses) == 0:
             self.discovery(None)
         else:
@@ -125,65 +132,108 @@ class Node():
 
         while True:
             try:
-                # collect transactions
-                txns_to_mine = []
-                while len(txns_to_mine) < MAX_TXN_PER_BLOCK:
+                # collect valid txns from the mempool
+                raw_txns = []
+                while True:
                     try:
                         tx = self.mempool.get(block=False)
                         
-                        # Lazy Pruning: skip if already in chain
-                        if any(b.has_transaction(tx.transaction_hash) for b in self.blockchain.chain):
+                        # prune if the txn is already in the chain
+                        if any(t.transaction_hash == tx.transaction_hash for b in self.blockchain.blocks for t in b.transactions):
                             continue
-
-                        # Check nonce against state
-                        sender = ""
-                        is_faucet = False
-                        if tx.HasField("order_tx"):
-                            sender = tx.order_tx.sender_address
-                            tx_nonce = tx.order_tx.nonce
-                            is_faucet = (tx.order_tx.script == "FAUCET")
-                        elif tx.HasField("grid_rate_tx"):
-                            sender = tx.grid_rate_tx.grid_address
-                            tx_nonce = 0 # TODO: Nonce for grid rate
                         
-                        if sender:
-                            account = self.blockchain.state.get_account(sender)
-                            # Standard tx: must be > current nonce
-                            # Faucet tx: nonce is 0, account.nonce is 0. allowed.
-                            if not is_faucet and account.nonce >= tx_nonce and tx.HasField("order_tx"):
-                                continue
-                                
-                        txns_to_mine.append(tx)
+                        raw_txns.append(tx)
                     except queue.Empty:
                         break
 
-                if len(txns_to_mine) > 0 or random.random() < 0.1: # Mine empty blocks sometimes
+                if not raw_txns and random.random() > 0.1:
+                    time.sleep(5)
+                    continue
+
+                # process transactions
+                txns_to_mine = []
+                current_state_copy = self.blockchain.state.copy()
+                active_grid_rate = current_state_copy.active_grid_rate
+                # prevents duplicate faucets
+                faucets_in_this_block = set()
+
+                for tx in raw_txns:
+                    if len(txns_to_mine) >= MAX_TXN_PER_BLOCK:
+                        break
+
+                    if tx.HasField("grid_rate_tx"):
+                        active_grid_rate = tx.grid_rate_tx
+                        txns_to_mine.append(tx)
+                        continue
+
+                    if tx.HasField("order_tx"):
+                        ord = tx.order_tx
+                        
+                        # handle faucets
+                        if ord.script == "FAUCET":
+                            if ord.sender_address in faucets_in_this_block:
+                                continue
+                            
+                            # check if the account is empty
+                            acc = current_state_copy.get_account(ord.sender_address)
+                            if acc.micro_coins == 0 and acc.energy_wh == 0 and acc.nonce == 0:
+                                txns_to_mine.append(tx)
+                                faucets_in_this_block.add(ord.sender_address)
+                                acc.micro_coins = 1 
+                            continue
+
+                        # handle real trades
+                        if active_grid_rate is None:
+                            continue
+                        
+                        # validate against working state
+                        ctx = ValidationContext(height=self.blockchain.get_tip().header.height + 1, grid_rate=active_grid_rate)
+                        ok, reason = validate_order_tx(tx, ctx, current_state_copy)
+                        
+                        if ok:
+                            # create TradeTx
+                            trade_tx = create_trade_tx(ord, active_grid_rate, self.address, fee=0)
+                            txns_to_mine.append(trade_tx)
+                            
+                            # Update working state (nonce + money) to prevent double-spending in same block
+                            # Settlement logic is complex, so we'll just update the nonce to satisfy validate_order_tx
+                            acc = current_state_copy.get_account(ord.sender_address)
+                            acc.nonce = ord.nonce
+                        else:
+                            # Order is invalid (bad nonce, bad price, etc.)
+                            # We could mine it as an OrderTx anyway just to burn the nonce, 
+                            # but it's cleaner to just drop it.
+                            continue
+
+                # attempt to mine the block
+                self.mining_interrupt.clear()
+                tip = self.blockchain.get_tip()
+                mined_block = None 
+                
+                if len(txns_to_mine) > 0 or random.random() < 0.3:
                     print(f"[Miner] Mining Block with {len(txns_to_mine)} transactions...")
-                    self.mining_interrupt.clear()
-                    tip = self.blockchain.get_tip()
                     mined_block = construct_and_mine_block(tip, txns_to_mine, DIFFICULTY, stop_event=self.mining_interrupt)
+                
                 if mined_block:
                     success = self.blockchain.add_block(mined_block)
                     print(f"Block {mined_block.header.height} Appended: {success}")
                     if success:
-                        # mark as seen and broadcast
                         block_hash = calculate_header_hash(mined_block.header)
                         self.seen_blocks.add(block_hash)
-                        
                         print(f"[IP: {self.address}] [Block Mined] Block Hash: {block_hash}")
                         
-                        # broadcast to network
+                        # broadcast
                         thread = threading.Thread(target=self.broadcast_block, args=(mined_block,))
                         thread.start()
                 else:
-                    print("Mining interrupted or failed")
+                    if txns_to_mine:
+                        print("Mining interrupted or failed")
 
-            except KeyboardInterrupt:
-                print("Shutting down mining upon keyboard interrupt")
-                return
-            # TODO: Broadcast the block has been mined / handle that across nodes
+            except Exception as e:
+                print(f"[Miner] Error in mine_loop: {e}")
+                import traceback
+                traceback.print_exc()
 
-            # Upon finishing, sleep for random amount of time to avoid conflicts
             time.sleep(random.randint(3,5))
 
     def auto_faucet_loop(self):
@@ -271,6 +321,6 @@ if __name__ == '__main__':
     except Exception:
         pass
 
-    node = Node(ip_add) # Pass in address of docker container
+    node = Node(ip_add)
     node.run()
         

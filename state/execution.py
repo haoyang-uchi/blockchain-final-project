@@ -42,17 +42,17 @@ def apply_block(block, state):
         ord = tx.order_tx
         account = working.get_account(ord.sender_address)
         
-        # Increment nonce for real trades, but keep at 0 for Faucet
+        # incremenet for a real trade but not for faucet
         if ord.script != "FAUCET":
             account.nonce = ord.nonce
 
-        # Faucet Grant: Transfer funds from Grid to new User
+        # faucet: give funds from the grid to a new user
         if ord.script == "FAUCET":
             grid = working.get_account(GRID_ADDRESS)
             grant_coins = 5_000_000
             grant_energy = 5_000
             
-            # Simple transfer logic
+            # transfer
             grid.micro_coins -= grant_coins
             grid.energy_wh -= grant_energy
             account.micro_coins += grant_coins
@@ -76,6 +76,7 @@ def apply_block(block, state):
             push=is_push,
             fee=trade.miner_fee,
             miner_address=trade.miner_address,
+            nonce=order.nonce,
         )
 
     return working, True, ""

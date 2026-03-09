@@ -1,15 +1,20 @@
-import configparser
+import os
+import sys
+
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root)
+
 import grpc
+import configparser
 from concurrent import futures
 import logging
 import sys
 import os
-import network.config as config
 import proto.energy_chain_pb2 as energy_chain_pb2
 import proto.energy_chain_pb2_grpc as energy_chain_pb2_grpc
 
 # Get port from config
-PORT = config.PORT
+PORT = "58333"
 
 # Python class for register service + register node
 class Registrar(energy_chain_pb2_grpc.RegisterServicer):
