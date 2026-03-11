@@ -52,26 +52,6 @@ python3 -m network.run_node (output from before - i.e. 172.17.0.3)
 
 All containers will automatically be removed when you exit interactive mode.
 
-Helpful development tips:
-- Use variable in config.py for the network port
-- Remember to restart the docker server to reset the cache of known nodes. 
-- If GRPC gives you any difficulties, sometimes you need to run the following: 
-```bash
-pip3 install --upgrade google-api-python-client
-```
-- To regenerate the python files after editing anything in the proto directory, run the following:
-```bash
-cd ./proto
-bash proto_2_py.sh
-```
-Then for proto/energy_chain_pb2_grpc.py, be sure to change the import statement to
-```python
-import proto.energy_chain_pb2 as energy__chain__pb2
-```
-
-Clarice's Notes for her PR (will delete later):
-- Decided to create separate proto services for registrar nodes and regular nodes due to the fact I need to store different logic for registrar and regular node classes. 
-
 ## CLI
 Run the following command first: 
 ```

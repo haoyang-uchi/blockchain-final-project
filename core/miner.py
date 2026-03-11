@@ -24,7 +24,9 @@ def verify(header: pb2.Header) -> bool:
 
 
 # mine a block
-def mine_block(header: pb2.Header, max_nonce: int = 100_000_000, stop_event=None) -> bool:
+def mine_block(
+    header: pb2.Header, max_nonce: int = 100_000_000, stop_event=None
+) -> bool:
     # get the target
     target_val = calculate_target(header.bits)
     start_time = time.time()
@@ -42,7 +44,7 @@ def mine_block(header: pb2.Header, max_nonce: int = 100_000_000, stop_event=None
             print(f"[Miner] Block Hash: {block_hash}, Nonce: {header.nonce}")
             return True
         header.nonce += 1
-        
+
         if header.nonce % 1000000 == 0:
             print(f"[Miner] Continuing mining - Current nonce: {header.nonce}")
 
@@ -53,7 +55,7 @@ def construct_and_mine_block(
     prev_block: pb2.Block,
     transactions: List[pb2.Transaction],
     difficulty_bits: int = 0x207FFFFF,
-    stop_event=None
+    stop_event=None,
 ) -> pb2.Block:
     new_block = pb2.Block()
     new_block.header.version = 1

@@ -1,7 +1,15 @@
+# state/execution.py
+
 import proto.energy_chain_pb2 as pb2
 from core.state import State, GRID_ADDRESS
-from state.validation import ValidationContext, validate_grid_rate_tx, validate_order_tx, validate_trade_tx
+from state.validation import (
+    ValidationContext,
+    validate_grid_rate_tx,
+    validate_order_tx,
+    validate_trade_tx,
+)
 from core.block import calculate_header_hash
+
 
 def apply_block(block, state):
     """
@@ -25,7 +33,11 @@ def apply_block(block, state):
         elif payload == "trade_tx":
             trade_txs.append(tx)
         else:
-            return state, False, f"Unknown transaction payload type in block at height {height}"
+            return (
+                state,
+                False,
+                f"Unknown transaction payload type in block at height {height}",
+            )
 
     for tx in grid_rate_txs:
         ok, reason = validate_grid_rate_tx(tx, ctx, working)
@@ -38,10 +50,10 @@ def apply_block(block, state):
         ok, reason = validate_order_tx(tx, ctx, working)
         if not ok:
             return state, False, f"OrderTx invalid: {reason}"
-        
+
         ord = tx.order_tx
         account = working.get_account(ord.sender_address)
-        
+
         # incremenet for a real trade but not for faucet
         if ord.script != "FAUCET":
             account.nonce = ord.nonce
@@ -51,14 +63,16 @@ def apply_block(block, state):
             grid = working.get_account(GRID_ADDRESS)
             grant_coins = 5_000_000
             grant_energy = 5_000
-            
+
             # transfer
             grid.micro_coins -= grant_coins
             grid.energy_wh -= grant_energy
             account.micro_coins += grant_coins
             account.energy_wh += grant_energy
-            
-            print(f"Faucet: granted {grant_coins} coins and {grant_energy} Wh to {ord.sender_address[:16]}...")
+
+            print(
+                f"Faucet: granted {grant_coins} coins and {grant_energy} Wh to {ord.sender_address[:16]}..."
+            )
 
     for tx in trade_txs:
         ok, reason = validate_trade_tx(tx, ctx, working)
@@ -67,7 +81,7 @@ def apply_block(block, state):
 
         trade = tx.trade_tx
         order = trade.order
-        is_push = (order.type == pb2.PUSH)
+        is_push = order.type == pb2.PUSH
 
         working.apply_trade(
             user_address=order.sender_address,

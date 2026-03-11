@@ -1,4 +1,5 @@
 # core/cryptography.py
+
 from ecdsa.util import sigencode_der, sigdecode_der
 import proto.energy_chain_pb2 as pb2
 from ecdsa import SigningKey, VerifyingKey, SECP256k1

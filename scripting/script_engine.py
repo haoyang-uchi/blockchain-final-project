@@ -1,6 +1,5 @@
 # scripting/script_engine.py
 
-
 # specifically for handling errors that happen during a script execution
 class ScriptError(Exception):
     pass
@@ -102,6 +101,7 @@ class ScriptEngine:
             else:
                 self.stack.append(0)
 
+        # syntax is 'a b AND'
         elif op == "AND":
             if len(self.stack) < 2:
                 raise ScriptError("AND requires 2 elements.")
@@ -112,6 +112,7 @@ class ScriptEngine:
             else:
                 self.stack.append(0)
 
+        # syntax is 'a b OR'
         elif op == "OR":
             if len(self.stack) < 2:
                 raise ScriptError("OR requires 2 elements.")

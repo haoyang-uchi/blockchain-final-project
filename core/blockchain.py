@@ -17,7 +17,7 @@ class Blockchain:
     def initialize_genesis(self):
         genesis = create_new_block(prev_hash="0" * 64, height=0, bits=0x1E0FFFF0)
 
-        # giving the grid 100 GWh (which is a lot)
+        # giving the grid 100 GWh (more than it will ever need)
         self.state.get_account(GRID_ADDRESS).energy_wh = 100_000_000_000
         # giving 1 trillion microcoins
         self.state.get_account(GRID_ADDRESS).micro_coins = 1_000_000_000_000
@@ -30,7 +30,7 @@ class Blockchain:
         tip = self.get_tip()
         if block.header.height <= tip.header.height:
             return False
-            
+
         if block.header.height != tip.header.height + 1:
             print(
                 f"Block height {block.header.height} invalid. Expected {tip.header.height + 1}"
@@ -40,11 +40,11 @@ class Blockchain:
         if block.header.hash_prev_block != calculate_header_hash(tip.header):
             print("Block prev_hash does not match local tip hash.")
             return False
-            
+
         if not verify(block.header):
             print("Block proof of work is invalid.")
             return False
-        
+
         new_state, success, reason = apply_block(block, self.state)
         if not success:
             print(f"Block state execution failed: {reason}")
@@ -69,9 +69,11 @@ class Blockchain:
     def replace_chain(self, new_blocks: List[pb2.Block]) -> bool:
         if len(new_blocks) <= len(self.blocks):
             return False
-            
-        print(f"Trying chain replacement: local={len(self.blocks)}, remote={len(new_blocks)}")
-        
+
+        print(
+            f"Trying chain replacement: local={len(self.blocks)}, remote={len(new_blocks)}"
+        )
+
         # start from a fresh state
         temp_state = State()
         temp_state.get_account(GRID_ADDRESS).energy_wh = 100_000_000_000
@@ -88,19 +90,21 @@ class Blockchain:
             # check height and previous hash
             if block.header.height != i:
                 return False
-            if block.header.hash_prev_block != calculate_header_hash(new_blocks[i-1].header):
+            if block.header.hash_prev_block != calculate_header_hash(
+                new_blocks[i - 1].header
+            ):
                 return False
-            
+
             # check proof of work
             if not verify(block.header):
                 return False
-                
+
             new_state, success, reason = apply_block(block, temp_state)
             if not success:
                 print(f"Reorg failed at height {i}: {reason}")
                 return False
             temp_state = new_state
-            
+
         self.blocks = list(new_blocks)
         self.state = temp_state
         print(f"Chain Replaced! New height: {len(self.blocks) - 1}")

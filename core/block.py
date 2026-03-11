@@ -43,7 +43,7 @@ def create_new_block(prev_hash: str, height: int, bits: int) -> pb2.Block:
     block.header.hash_prev_block = prev_hash
     # hardcoding the genesis time for consensus stability
     if height == 0:
-        block.header.timestamp = 1710000000 
+        block.header.timestamp = 1710000000
     else:
         block.header.timestamp = int(time.time())
     block.header.bits = bits

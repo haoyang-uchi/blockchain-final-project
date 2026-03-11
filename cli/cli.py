@@ -1,9 +1,11 @@
+# cli/cli.py
+
 import argparse
 import os
 import sys
 
 # Add project root to sys.path
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, root)
 
 import grpc
@@ -127,7 +129,9 @@ def cmd_faucet(args):
 
     try:
         response = _submit_tx(args.node, tx)
-        print(f"Faucet request submitted: success={response.success} message='{response.message}'")
+        print(
+            f"Faucet request submitted: success={response.success} message='{response.message}'"
+        )
         print(f"tx_hash={tx.transaction_hash}")
     except grpc.RpcError as e:
         print(f"Faucet RPC failed: {e.code().name} {e.details()}")
@@ -149,7 +153,7 @@ def cmd_balance(args):
     if not addr and args.wallet:
         wallet = _load_wallet(args.wallet)
         addr = wallet.public_key_hex
-    
+
     if not addr:
         print("Error: must provide --address or --wallet")
         return
