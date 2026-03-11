@@ -31,8 +31,6 @@ DIFFICULTY = 0x1F0FFFFF  # increased difficulty (compared to lab) to reduce fork
 MAX_TXN_PER_BLOCK = 10
 
 """Logical representation of the entire node. """
-
-
 class Node:
     def __init__(self, my_address):
         """

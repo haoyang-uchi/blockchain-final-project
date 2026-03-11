@@ -14,7 +14,7 @@ from concurrent import futures
 
 PORT = "58333"
 
-# Python class for register service + register node
+# class for register service + register node
 class Registrar(energy_chain_pb2_grpc.RegisterServicer):
     def __init__(self):
         self.last_registered = None
