@@ -16,11 +16,11 @@
 docker compose up --build
 ```
 2. In terminal 2, run the test script:
-**Basic Test**
+- **Basic Test**
 ```bash
 python3 scripts/basic_test.py
 ```
-**Advanced Test**
+- **Advanced Test**
 ```bash
 python3 scripts/advanced_script_test.py
 ```
