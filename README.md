@@ -22,7 +22,7 @@ python3 scripts/basic_test.py
 ```
 - **Advanced Test**
 ```bash
-python3 scripts/advanced_script_test.py
+python3 scripts/advanced_test.py
 ```
 3. Once it completes, then in terminal 1 shutdown docker
 ```bash

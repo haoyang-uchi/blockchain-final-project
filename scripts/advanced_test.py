@@ -25,7 +25,7 @@ def run_cli(args):
 
 
 def main():
-    print("Advanced Script Test")
+    print("Advanced Test")
 
     # check connection
     print(f"Connecting to node {NODE}...")
