@@ -25,14 +25,14 @@ def run_cli(args):
 
 
 def main():
-    print("Automatic Test")
+    print("Basic Test")
 
     # check connection
     print(f"Connecting to node {NODE}...")
     time.sleep(2)
     status = run_cli(["status"])
     if "ERROR" in status:
-        print(f"Could not connect. Is Docker running? (docker compose up -d)")
+        print(f"Could not connect.")
         return
     print(f"Connected. Chain Height: {status}")
 
@@ -59,7 +59,6 @@ def main():
             funded = True
             break
 
-        # Show what we see
         summary = balance_out.replace("\n", " | ")
         print(f"Still waiting... (Retries: {retries}) Current: {summary}")
         time.sleep(5)
@@ -69,24 +68,6 @@ def main():
         print("\n[TIMEOUT] Faucet grant not seen in time.")
         print("Nodes might still be mining. Check: docker compose logs -f node_a")
         return
-
-    # posting the grid quote
-    print("\n--- Posting Grid Quote (as Grid) ---")
-    print(
-        run_cli(
-            [
-                "post-quote",
-                "--bid",
-                "400",
-                "--ask",
-                "500",
-                "--expiry",
-                "1000",
-                "--wallet",
-                "grid_wallet.json",
-            ]
-        )
-    )
 
     # buy energy test
     print("\n--- Buy Order Test ---")
@@ -115,7 +96,7 @@ def main():
         print(f"Mining... {15 - i*5}s left")
         time.sleep(5)
 
-    print("\n=== Final Status ===")
+    print("\n--- Final Status ---")
     print(run_cli(["balance", "--wallet", WALLET]))
     print("\nTest Complete!")
 
