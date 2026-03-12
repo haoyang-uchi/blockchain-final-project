@@ -11,6 +11,63 @@
 
 ## CLI
 
+`cli/cli.py` is the command-line interface for the project. It creates or loads wallets, builds and signs transactions locally, and sends them to a blockchain node over gRPC.
+
+#### Basic Command
+
+##### Initialize Wallet
+```bash
+python -m cli.cli init-wallet --wallet testing_ground/user_a.json
+```
+
+###### Post Quote
+```bash
+python -m cli.cli post-quote --bid 5 --ask 12 --expiry 1000000 --wallet grid_wallet.json --node 127.0.0.1:58334
+```
+
+###### Buy Energy
+```bash
+python -m cli.cli buy --energy-wh 100 --limit-price 12 --expiry 1000000 --nonce 1 --script "1" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+###### Sell Energy
+```bash
+python -m cli.cli sell --energy-wh 80 --limit-price 5 --expiry 1000000 --nonce 2 --script "1" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+###### Request Faucet Funds
+```bash
+python -m cli.cli faucet --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+###### Check Balance
+```bash
+python -m cli.cli balance --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+###### Check Node Status
+```bash
+python -m cli.cli status --node 127.0.0.1:58334
+```
+
+#### Advance Command
+
+###### Buy only if the current pull rate is below 20
+```bash
+python -m cli.cli buy --energy-wh 10 --limit-price 12 --expiry 1000000 --nonce 1 --script "GET_PULL_RATE 20 LT VERIFY 1" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+###### Sell only if the current push rate equals 5
+```bash
+python -m cli.cli sell --energy-wh 10 --limit-price 5 --expiry 1000000 --nonce 2 --script "GET_PUSH_RATE 5 EQ" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+###### Buy only if the current block height is greater than 100
+```bash
+python -m cli.cli buy --energy-wh 10 --limit-price 12 --expiry 1000000 --nonce 3 --script "GETHEIGHT 100 GT" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
+```
+
+
 ## Running Automatic Tests
 1. In terminal 1 start the docker container
 ```bash

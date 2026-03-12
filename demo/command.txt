@@ -1,16 +1,29 @@
 # Run from the root directory
+docker compose up --build -d
+docker compose logs -f
+
 python -m cli.cli init-wallet --wallet testing_ground/user_a.json
 python -m cli.cli init-wallet --wallet testing_ground/user_b.json
+
 python -m cli.cli faucet --wallet testing_ground/user_a.json --node 127.0.0.1:58334
 python -m cli.cli faucet --wallet testing_ground/user_b.json --node 127.0.0.1:58334
+
 python -m cli.cli balance --wallet testing_ground/user_a.json --node 127.0.0.1:58334
 python -m cli.cli balance --wallet testing_ground/user_b.json --node 127.0.0.1:58334
+
 python -m cli.cli buy --energy-wh 120 --limit-price 12 --expiry 1000000 --nonce 1 --script "1" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
 python -m cli.cli sell --energy-wh 70 --limit-price 5 --expiry 1000000 --nonce 1 --script "1" --wallet testing_ground/user_b.json --node 127.0.0.1:58334
 python -m cli.cli balance --wallet testing_ground/user_a.json --node 127.0.0.1:58334
 python -m cli.cli balance --wallet testing_ground/user_b.json --node 127.0.0.1:58334
+
 python -m cli.cli buy --energy-wh 60 --limit-price 12 --expiry 1000000 --nonce 2 --script "1" --wallet testing_ground/user_a.json --node 127.0.0.1:58334
 python -m cli.cli sell --energy-wh 40 --limit-price 5 --expiry 1000000 --nonce 2 --script "1" --wallet testing_ground/user_b.json --node 127.0.0.1:58334
 python -m cli.cli balance --wallet testing_ground/user_a.json --node 127.0.0.1:58334
 python -m cli.cli balance --wallet testing_ground/user_b.json --node 127.0.0.1:58334
+
+docker compose down
+
+
+
+python -m cli.cli post-quote --bid 5 --ask 12 --expiry 1000000 --wallet grid_wallet.json --node 127.0.0.1:58334
 

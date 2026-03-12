@@ -16,7 +16,6 @@ from core.block import calculate_tx_hash
 from core.cryptography import sign_tx
 
 
-DEFAULT_WALLET_PATH = "wallet.json"
 PORT = "58333"
 
 
@@ -174,11 +173,11 @@ def cmd_balance(args):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="Energy Trading Chain CLI")
+    parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     p_init = subparsers.add_parser("init-wallet")
-    p_init.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_init.add_argument("--wallet")
     p_init.set_defaults(func=cmd_init_wallet)
 
     p_quote = subparsers.add_parser("post-quote")
@@ -186,7 +185,7 @@ def build_parser():
     p_quote.add_argument("--ask", type=int, required=True)
     p_quote.add_argument("--expiry", type=int, required=True)
     p_quote.add_argument("--node", required=True)
-    p_quote.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_quote.add_argument("--wallet")
     p_quote.set_defaults(func=cmd_post_quote)
 
     p_buy = subparsers.add_parser("buy")
@@ -196,7 +195,7 @@ def build_parser():
     p_buy.add_argument("--nonce", type=int, default=1)
     p_buy.add_argument("--script", default="1")
     p_buy.add_argument("--node", required=True)
-    p_buy.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_buy.add_argument("--wallet")
     p_buy.set_defaults(func=cmd_buy)
 
     p_sell = subparsers.add_parser("sell")
@@ -206,7 +205,7 @@ def build_parser():
     p_sell.add_argument("--nonce", type=int, default=1)
     p_sell.add_argument("--script", default="1")
     p_sell.add_argument("--node", required=True)
-    p_sell.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_sell.add_argument("--wallet")
     p_sell.set_defaults(func=cmd_sell)
 
     p_status = subparsers.add_parser("status")
@@ -214,13 +213,13 @@ def build_parser():
     p_status.set_defaults(func=cmd_status)
 
     p_faucet = subparsers.add_parser("faucet")
-    p_faucet.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_faucet.add_argument("--wallet")
     p_faucet.add_argument("--node", required=True)
     p_faucet.set_defaults(func=cmd_faucet)
 
     p_balance = subparsers.add_parser("balance")
     p_balance.add_argument("--node", required=True)
-    p_balance.add_argument("--wallet", default=DEFAULT_WALLET_PATH)
+    p_balance.add_argument("--wallet")
     p_balance.add_argument("--address")
     p_balance.set_defaults(func=cmd_balance)
 
