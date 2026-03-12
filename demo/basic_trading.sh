@@ -8,6 +8,7 @@ cd "$ROOT_DIR"
 python -m cli.cli faucet --wallet testing_ground/demo_user_a.json --node 127.0.0.1:58334
 python -m cli.cli faucet --wallet testing_ground/demo_user_b.json --node 127.0.0.1:58334
 
+sleep 4
 
 python -m cli.cli balance --wallet testing_ground/demo_user_a.json --node 127.0.0.1:58334
 python -m cli.cli balance --wallet testing_ground/demo_user_b.json --node 127.0.0.1:58334
