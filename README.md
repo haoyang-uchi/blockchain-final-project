@@ -10,7 +10,7 @@
 | Kevin Dougherty | kdough01 | kdough01 |
 
 
-## General Transaction Test/Setup
+## Running Tests
 1. In terminal 1 start the docker container
 ```bash
 docker compose up --build
@@ -29,40 +29,6 @@ python3 scripts/advanced_script_test.py
 docker compose down
 ```
 
-## Networking
-Downloading GRPC packages: 
-pip3 install -r requirements.txt
-
-Testing the docker (all in -it interactive mode to verify it works):
-1. Build image
-```bash
-cd ./network/test_launch_docker
-bash build.sh
-```
-2. Launch registrar + run registrar server
-```bash
-bash launch_registrar.sh
-// In Docker container shell:
-cd shared
-python3 -m network.run_registrar
-```
-3. For every regular node you want to spawn, open a new terminal window and execute the following:
-```bash
-bash launch_node.sh <unique container name>
-// In Docker container shell:
-cd shared
-hostname -I (note the output)
-python3 -m network.run_node (output from before - i.e. 172.17.0.3)
-```
-
-All containers will automatically be removed when you exit interactive mode.
-
-## CLI
-Run the following command first: 
-```
-export PYTHONPATH=/path/to/blockchain-final-project:$PYTHONPATH
-alias energycli='PYTHONPATH=/path/to/blockchain-final-project python -m cli.cli'
-```
 
 ## Sources
 - Proto syntax: https://protobuf.dev/programming-guides/proto3/
