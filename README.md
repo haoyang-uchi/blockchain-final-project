@@ -9,8 +9,9 @@
 | Haoyang Li | haoyangl | haoyang-uchi |
 | Kevin Dougherty | kdough01 | kdough01 |
 
+## CLI
 
-## Running Tests
+## Running Automatic Tests
 1. In terminal 1 start the docker container
 ```bash
 docker compose up --build
