@@ -96,7 +96,7 @@ class NodeService(energy_chain_pb2_grpc.NodeServiceServicer):
         for height in range(request.start_height, request.end_height + 1):
             block = self.host_node.blockchain.get_block_by_height(height)
             if block:
-                blocks.append(b)
+                blocks.append(block)
             else:
                 break
         return energy_chain_pb2.GetBlocksResponse(blocks=blocks)
